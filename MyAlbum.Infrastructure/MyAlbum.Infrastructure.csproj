@@ -17,6 +17,8 @@
     <None Remove="EF\Models\" />
     <None Remove="Note\" />
     <None Remove="EF\Extensions\" />
+    <None Remove="Repositories\" />
+    <None Remove="Repositories\EmployeeAccount\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EF\" />
@@ -24,6 +26,8 @@
     <Folder Include="EF\Models\" />
     <Folder Include="Note\" />
     <Folder Include="EF\Extensions\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\EmployeeAccount\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">

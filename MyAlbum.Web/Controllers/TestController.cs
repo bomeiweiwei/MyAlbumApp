@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using MyAlbum.Application.EmployeeAccount;
 using MyAlbum.Application.Test;
+using MyAlbum.Models.Employee;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,10 +17,12 @@ namespace MyAlbum.Web.Controllers
     {
         private readonly IWebHostEnvironment _env;
         private readonly ITestService _testService;
-        public TestController(IWebHostEnvironment env, ITestService testService)
+        private readonly IEmployeeAccountReadService _eaService;
+        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountReadService eaService)
         {
             _env = env;
             _testService = testService;
+            _eaService = eaService;
         }
         /// <summary>
         /// 取得環境變數
@@ -42,6 +46,15 @@ namespace MyAlbum.Web.Controllers
             var connectResult = await _testService.GetConnectResult();
             return Ok(new { connectResult });
         }
+
+        //[HttpPost]
+        //[Route("GetEmployee")]
+        //public async Task<IActionResult> GetEmployee(GetEmployeeReq req, CancellationToken ct)
+        //{
+        //    var dto = await _eaService.GetEmployeeAsync(req, ct);
+        //    if (dto is null) return NotFound();
+        //    return Ok(dto);
+        //}
     }
 }
 

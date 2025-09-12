@@ -8,5 +8,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
+    <ProjectReference Include="..\MyAlbum.Models\MyAlbum.Models.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="EmployeeAccount\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EmployeeAccount\" />
   </ItemGroup>
 </Project>

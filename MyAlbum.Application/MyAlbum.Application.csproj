@@ -14,9 +14,13 @@
   <ItemGroup>
     <None Remove="Test\" />
     <None Remove="Test\implement\" />
+    <None Remove="EmployeeAccount\" />
+    <None Remove="EmployeeAccount\implement\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Test\" />
     <Folder Include="Test\implement\" />
+    <Folder Include="EmployeeAccount\" />
+    <Folder Include="EmployeeAccount\implement\" />
   </ItemGroup>
 </Project>
