@@ -12,4 +12,7 @@
     <ProjectReference Include="..\MyAlbum.Models\MyAlbum.Models.csproj" />
     <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+  </ItemGroup>
 </Project>

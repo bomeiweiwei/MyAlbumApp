@@ -8,6 +8,8 @@ namespace MyAlbum.Models.Account
         public bool IsActive { get; set; }
         public string UserType { get; set; }
         public string FullName { get; set; }
+
+        public string PasswordHash { get; set; }
     }
 }
 

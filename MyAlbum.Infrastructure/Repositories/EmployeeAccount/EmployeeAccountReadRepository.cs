@@ -35,7 +35,8 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
                                    LoginName = account.LoginName,
                                    IsActive = account.IsActive,
                                    UserType = LoginUserType.Employee.GetDescription(),
-                                   FullName = emp.FullName
+                                   FullName = emp.FullName,
+                                   PasswordHash = account.PasswordHash
                                }).FirstOrDefaultAsync(ct);
             return query;
         }

@@ -4,8 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MyAlbum.Application.EmployeeAccount;
+using MyAlbum.Application.Identity;
+using MyAlbum.Application.Identity.implement;
 using MyAlbum.Application.Test;
 using MyAlbum.Models.Employee;
+using MyAlbum.Models.Identity;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,12 +20,12 @@ namespace MyAlbum.Web.Controllers
     {
         private readonly IWebHostEnvironment _env;
         private readonly ITestService _testService;
-        private readonly IEmployeeAccountReadService _eaService;
-        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountReadService eaService)
+        private readonly IIdentityService _identityService;
+        public TestController(IWebHostEnvironment env, ITestService testService, IIdentityService identityService)
         {
             _env = env;
             _testService = testService;
-            _eaService = eaService;
+            _identityService = identityService;
         }
         /// <summary>
         /// 取得環境變數
@@ -47,14 +50,14 @@ namespace MyAlbum.Web.Controllers
             return Ok(new { connectResult });
         }
 
-        //[HttpPost]
-        //[Route("GetEmployee")]
-        //public async Task<IActionResult> GetEmployee(GetEmployeeReq req, CancellationToken ct)
-        //{
-        //    var dto = await _eaService.GetEmployeeAsync(req, ct);
-        //    if (dto is null) return NotFound();
-        //    return Ok(dto);
-        //}
+        [HttpPost]
+        [Route("TestLogin")]
+        public async Task<IActionResult> TestLogin(LoginReq req)
+        {
+            var dto = await _identityService.Login(req);
+            if (dto is null) return NotFound();
+            return Ok(dto);
+        }
     }
 }
 
