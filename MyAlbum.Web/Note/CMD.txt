@@ -1,0 +1,23 @@
+﻿# 建議先在 shell 設定環境為 Development（會載入 User Secrets）
+export DOTNET_ENVIRONMENT=Development   # macOS/Linux
+
+# 在解決方案根目錄下執行（路徑請換成你的實際專案）
+dotnet ef dbcontext scaffold \
+  "Name=ConnectionStrings:MasterConnection" \
+  Microsoft.EntityFrameworkCore.SqlServer \
+  --project src/MyEfClassLib/MyEfClassLib.csproj \        # 產出放哪個類別庫
+  --startup-project src/MyWebApi/MyWebApi.csproj \        # 啟動專案（有 UserSecretsId）
+  --output-dir Entities \                                  # 實體類輸出資料夾
+  --context-dir Data \                                     # DbContext 放哪個資料夾
+  --no-onconfiguring \                                     # 不在 OnConfiguring 寫死連線字串
+  --force                                                  # 覆寫既有檔案（小心）
+
+dotnet ef dbcontext scaffold \
+  "Name=ConnectionStrings:MasterConnection" \
+  Microsoft.EntityFrameworkCore.SqlServer \
+  --project MyAlbum.Infrastructure/MyAlbum.Infrastructure.csproj \
+  --startup-project MyAlbum.Web/MyAlbum.Web.csproj \
+  --output-dir EF/Models \
+  --context-dir EF/Data \
+  --no-onconfiguring \
+  --force  
