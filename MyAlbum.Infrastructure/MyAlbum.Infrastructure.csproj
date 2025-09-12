@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyAlbum.Domain\MyAlbum.Domain.csproj" />
+    <ProjectReference Include="..\MyAlbum.Models\MyAlbum.Models.csproj" />
+    <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="EF\" />
+    <None Remove="EF\Data\" />
+    <None Remove="EF\Models\" />
+    <None Remove="Note\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EF\" />
+    <Folder Include="EF\Data\" />
+    <Folder Include="EF\Models\" />
+    <Folder Include="Note\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+  </ItemGroup>
+</Project>

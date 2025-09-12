@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyAlbum.Domain\MyAlbum.Domain.csproj" />
+    <ProjectReference Include="..\MyAlbum.Models\MyAlbum.Models.csproj" />
+    <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
+  </ItemGroup>
+</Project>
