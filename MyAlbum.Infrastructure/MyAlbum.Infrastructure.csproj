@@ -16,12 +16,14 @@
     <None Remove="EF\Data\" />
     <None Remove="EF\Models\" />
     <None Remove="Note\" />
+    <None Remove="EF\Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EF\" />
     <Folder Include="EF\Data\" />
     <Folder Include="EF\Models\" />
     <Folder Include="Note\" />
+    <Folder Include="EF\Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">

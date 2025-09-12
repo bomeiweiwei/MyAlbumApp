@@ -1,7 +1,16 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using MyAlbum.IoC;
+using MyAlbum.Shared.SysConfigs;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// 初始化設定
+ConfigurationManager configuration = builder.Configuration;
+ConfigManager.Initial(configuration);
+// 管理注入
+builder.Services.RegisterService(configuration);
 
 var app = builder.Build();
 

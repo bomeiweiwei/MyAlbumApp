@@ -11,4 +11,12 @@
     <ProjectReference Include="..\MyAlbum.Models\MyAlbum.Models.csproj" />
     <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Test\" />
+    <None Remove="Test\implement\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Test\" />
+    <Folder Include="Test\implement\" />
+  </ItemGroup>
 </Project>
