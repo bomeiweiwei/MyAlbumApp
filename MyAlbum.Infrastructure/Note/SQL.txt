@@ -1,0 +1,264 @@
+﻿
+SET NOCOUNT ON;
+BEGIN TRY
+BEGIN TRAN;
+
+------------------------------------------------------------
+-- 0) 清理舊物件（重新建立表格用）
+------------------------------------------------------------
+IF OBJECT_ID('dbo.EmployeeRole') IS NOT NULL DROP TABLE dbo.EmployeeRole;
+IF OBJECT_ID('dbo.RolePermission') IS NOT NULL DROP TABLE dbo.RolePermission;
+IF OBJECT_ID('dbo.Permission') IS NOT NULL DROP TABLE dbo.Permission;
+IF OBJECT_ID('dbo.Role') IS NOT NULL DROP TABLE dbo.Role;
+IF OBJECT_ID('dbo.Comment') IS NOT NULL DROP TABLE dbo.Comment;
+IF OBJECT_ID('dbo.PhotoAlbum') IS NOT NULL DROP TABLE dbo.PhotoAlbum;
+IF OBJECT_ID('dbo.Category') IS NOT NULL DROP TABLE dbo.Category;
+IF OBJECT_ID('dbo.Employee') IS NOT NULL DROP TABLE dbo.Employee;
+IF OBJECT_ID('dbo.Member') IS NOT NULL DROP TABLE dbo.Member;
+IF OBJECT_ID('dbo.Account') IS NOT NULL DROP TABLE dbo.Account;
+
+------------------------------------------------------------
+-- 1) Account（登入帳號）
+------------------------------------------------------------
+CREATE TABLE dbo.Account (
+    AccountId           UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_Account_AccountId DEFAULT NEWID(),
+    LoginName           NVARCHAR(100)    NOT NULL,
+    NormalizedLoginName AS UPPER(LoginName) PERSISTED,
+    Email               NVARCHAR(256)    NULL,
+    NormalizedEmail     AS CASE WHEN Email IS NULL THEN NULL ELSE UPPER(Email) END PERSISTED,
+    EmailConfirmed      BIT              NOT NULL CONSTRAINT DF_Account_EmailConfirmed DEFAULT(0),
+    PasswordHash        NVARCHAR(256)    NOT NULL,
+    SecurityStamp       UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_Account_Sec DEFAULT NEWID(),
+    UserType            TINYINT          NOT NULL,  -- 0=Member,1=Employee
+    IsActive            BIT              NOT NULL CONSTRAINT DF_Account_IsActive DEFAULT(1),
+    LastLoginDate       DATETIME2(3)     NULL,
+    CreatedDate         DATETIME2(3)     NOT NULL CONSTRAINT DF_Account_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy           UNIQUEIDENTIFIER NULL,
+    UpdatedDate         DATETIME2(3)     NOT NULL CONSTRAINT DF_Account_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy           UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Account PRIMARY KEY (AccountId),
+    CONSTRAINT UQ_Account_LoginName UNIQUE (LoginName)
+);
+CREATE INDEX IX_Account_NormalizedLoginName ON dbo.Account(NormalizedLoginName);
+
+------------------------------------------------------------
+-- 2) Member（會員資料）
+------------------------------------------------------------
+CREATE TABLE dbo.Member (
+    MemberId     INT IDENTITY(1,1) NOT NULL,
+    AccountId    UNIQUEIDENTIFIER   NOT NULL,
+    DisplayName  NVARCHAR(100)      NOT NULL,
+    AvatarUrl    NVARCHAR(300)      NULL,
+    Bio          NVARCHAR(1000)     NULL,
+    CreatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Member_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy    UNIQUEIDENTIFIER NULL,
+    UpdatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Member_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy    UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Member PRIMARY KEY (MemberId),
+    CONSTRAINT UQ_Member_Account UNIQUE(AccountId),
+    CONSTRAINT FK_Member_Account FOREIGN KEY (AccountId) REFERENCES dbo.Account(AccountId)
+);
+
+------------------------------------------------------------
+-- 3) Employee（員工資料）
+------------------------------------------------------------
+CREATE TABLE dbo.Employee (
+    EmployeeId   INT IDENTITY(1,1) NOT NULL,
+    AccountId    UNIQUEIDENTIFIER   NOT NULL,
+    FullName     NVARCHAR(100)      NOT NULL,
+    Title        NVARCHAR(100)      NULL,
+    HireDate     DATE               NULL,
+    IsActive     BIT                NOT NULL CONSTRAINT DF_Employee_IsActive DEFAULT(1),
+    CreatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Employee_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy    UNIQUEIDENTIFIER NULL,
+    UpdatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Employee_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy    UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Employee PRIMARY KEY (EmployeeId),
+    CONSTRAINT UQ_Employee_Account UNIQUE(AccountId),
+    CONSTRAINT FK_Employee_Account FOREIGN KEY (AccountId) REFERENCES dbo.Account(AccountId)
+);
+
+------------------------------------------------------------
+-- 4) Category（相簿類別）
+------------------------------------------------------------
+CREATE TABLE dbo.Category (
+    CategoryId   INT IDENTITY(1,1) NOT NULL,
+    CategoryName NVARCHAR(100)     NOT NULL,
+    Description  NVARCHAR(500)     NULL,
+    SortOrder    INT               NOT NULL CONSTRAINT DF_Category_Sort DEFAULT(0),
+    IsActive     BIT               NOT NULL CONSTRAINT DF_Category_Active DEFAULT(1),
+    CreatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Category_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy    UNIQUEIDENTIFIER NULL,
+    UpdatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Category_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy    UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Category PRIMARY KEY (CategoryId),
+    CONSTRAINT UQ_Category_Name UNIQUE(CategoryName)
+);
+
+------------------------------------------------------------
+-- 5) PhotoAlbum（圖片資料，原 Album）
+------------------------------------------------------------
+CREATE TABLE dbo.PhotoAlbum (
+    PhotoAlbumId      BIGINT IDENTITY(1,1) NOT NULL,
+    CategoryId        INT                  NOT NULL,
+    UploaderMemberId  INT                  NULL,
+    Title             NVARCHAR(200)        NOT NULL,
+    Description       NVARCHAR(MAX)        NULL,
+    StoragePath       NVARCHAR(500)        NOT NULL,
+    OriginalFileName  NVARCHAR(255)        NULL,
+    ContentType       NVARCHAR(100)        NULL,
+    SizeBytes         BIGINT               NULL,
+    Width             INT                  NULL,
+    Height            INT                  NULL,
+    ThumbPath         NVARCHAR(500)        NULL,
+    Visibility        TINYINT              NOT NULL CONSTRAINT DF_PhotoAlbum_Vis DEFAULT(0),
+    Status            TINYINT              NOT NULL CONSTRAINT DF_PhotoAlbum_Status DEFAULT(1),
+    ViewCount         BIGINT               NOT NULL CONSTRAINT DF_PhotoAlbum_View DEFAULT(0),
+    LikeCount         INT                  NOT NULL CONSTRAINT DF_PhotoAlbum_Like DEFAULT(0),
+    CommentCount      INT                  NOT NULL CONSTRAINT DF_PhotoAlbum_Comment DEFAULT(0),
+    ReleaseDate       DATETIME2(3)         NULL,
+    IsDeleted         BIT                  NOT NULL CONSTRAINT DF_PhotoAlbum_IsDeleted DEFAULT(0),
+    CreatedDate       DATETIME2(3) NOT NULL CONSTRAINT DF_PhotoAlbum_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy         UNIQUEIDENTIFIER NULL,
+    UpdatedDate       DATETIME2(3) NOT NULL CONSTRAINT DF_PhotoAlbum_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy         UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_PhotoAlbum PRIMARY KEY (PhotoAlbumId),
+    CONSTRAINT FK_PhotoAlbum_Category FOREIGN KEY (CategoryId) REFERENCES dbo.Category(CategoryId),
+    CONSTRAINT FK_PhotoAlbum_Member FOREIGN KEY (UploaderMemberId) REFERENCES dbo.Member(MemberId)
+);
+
+------------------------------------------------------------
+-- 6) Comment（留言）
+------------------------------------------------------------
+CREATE TABLE dbo.Comment (
+    CommentId       BIGINT IDENTITY(1,1) NOT NULL,
+    PhotoAlbumId    BIGINT               NOT NULL,
+    MemberId        INT                  NOT NULL,
+    ParentCommentId BIGINT               NULL,
+    Content         NVARCHAR(2000)       NOT NULL,
+    Status          TINYINT              NOT NULL CONSTRAINT DF_Comment_Status DEFAULT(1),
+    IsDeleted       BIT                  NOT NULL CONSTRAINT DF_Comment_IsDeleted DEFAULT(0),
+    CreatedDate     DATETIME2(3) NOT NULL CONSTRAINT DF_Comment_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy       UNIQUEIDENTIFIER NULL,
+    UpdatedDate     DATETIME2(3) NOT NULL CONSTRAINT DF_Comment_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy       UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Comment PRIMARY KEY (CommentId),
+    CONSTRAINT FK_Comment_PhotoAlbum FOREIGN KEY (PhotoAlbumId) REFERENCES dbo.PhotoAlbum(PhotoAlbumId),
+    CONSTRAINT FK_Comment_Member FOREIGN KEY (MemberId) REFERENCES dbo.Member(MemberId),
+    CONSTRAINT FK_Comment_Parent FOREIGN KEY (ParentCommentId) REFERENCES dbo.Comment(CommentId)
+);
+
+------------------------------------------------------------
+-- 7) Role / Permission / RolePermission / EmployeeRole
+------------------------------------------------------------
+CREATE TABLE dbo.Role (
+    RoleId      INT IDENTITY(1,1) NOT NULL,
+    RoleName    NVARCHAR(100)     NOT NULL,
+    Description NVARCHAR(300)     NULL,
+    IsActive    BIT               NOT NULL CONSTRAINT DF_Role_Active DEFAULT(1),
+    CreatedDate DATETIME2(3) NOT NULL CONSTRAINT DF_Role_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy   UNIQUEIDENTIFIER NULL,
+    UpdatedDate DATETIME2(3) NOT NULL CONSTRAINT DF_Role_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy   UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Role PRIMARY KEY (RoleId),
+    CONSTRAINT UQ_Role_Name UNIQUE(RoleName)
+);
+
+CREATE TABLE dbo.Permission (
+    PermissionId INT IDENTITY(1,1) NOT NULL,
+    Code         NVARCHAR(100)     NOT NULL,
+    Description  NVARCHAR(300)     NULL,
+    CreatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Permission_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy    UNIQUEIDENTIFIER NULL,
+    UpdatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_Permission_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy    UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Permission PRIMARY KEY (PermissionId),
+    CONSTRAINT UQ_Permission_Code UNIQUE(Code)
+);
+
+CREATE TABLE dbo.RolePermission (
+    RoleId       INT NOT NULL,
+    PermissionId INT NOT NULL,
+    CreatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_RolePermission_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy    UNIQUEIDENTIFIER NULL,
+    UpdatedDate  DATETIME2(3) NOT NULL CONSTRAINT DF_RolePermission_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy    UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_RolePermission PRIMARY KEY (RoleId, PermissionId),
+    CONSTRAINT FK_RolePermission_Role FOREIGN KEY(RoleId) REFERENCES dbo.Role(RoleId),
+    CONSTRAINT FK_RolePermission_Permission FOREIGN KEY(PermissionId) REFERENCES dbo.Permission(PermissionId)
+);
+
+CREATE TABLE dbo.EmployeeRole (
+    EmployeeId  INT NOT NULL,
+    RoleId      INT NOT NULL,
+    CreatedDate DATETIME2(3) NOT NULL CONSTRAINT DF_EmployeeRole_CreatedDate DEFAULT SYSUTCDATETIME(),
+    CreatedBy   UNIQUEIDENTIFIER NULL,
+    UpdatedDate DATETIME2(3) NOT NULL CONSTRAINT DF_EmployeeRole_UpdatedDate DEFAULT SYSUTCDATETIME(),
+    UpdatedBy   UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_EmployeeRole PRIMARY KEY (EmployeeId, RoleId),
+    CONSTRAINT FK_EmployeeRole_Emp FOREIGN KEY(EmployeeId) REFERENCES dbo.Employee(EmployeeId),
+    CONSTRAINT FK_EmployeeRole_Role FOREIGN KEY(RoleId) REFERENCES dbo.Role(RoleId)
+);
+
+------------------------------------------------------------
+-- 8) 種子資料
+------------------------------------------------------------
+DECLARE @accAdmin UNIQUEIDENTIFIER = NEWID();
+DECLARE @accWei   UNIQUEIDENTIFIER = NEWID();
+
+-- Account
+INSERT INTO dbo.Account(AccountId, LoginName, Email, PasswordHash, UserType)
+VALUES
+(@accAdmin, N'admin', N'admin@example.com', N'PLACEHOLDER_HASH', 1),
+(@accWei  , N'wei'  , N'wei@example.com'  , N'PLACEHOLDER_HASH', 0);
+
+-- Member
+INSERT INTO dbo.Member(AccountId, DisplayName)
+VALUES(@accWei, N'鍾小偉');
+
+-- Employee
+INSERT INTO dbo.Employee(AccountId, FullName)
+VALUES(@accAdmin, N'Admin');
+
+-- Category
+INSERT INTO dbo.Category(CategoryName, SortOrder)
+VALUES
+(N'科技',1),
+(N'藝術',2),
+(N'自然',3),
+(N'歷史',4);
+
+-- Role
+INSERT INTO dbo.Role(RoleName, Description)
+VALUES(N'系統管理者',N'擁有全部權限');
+
+-- Permission
+INSERT INTO dbo.Permission(Code, Description)
+VALUES
+(N'Employee.Read' , N'員工讀取'),
+(N'Employee.Write', N'員工變更'),
+(N'Employee.Delete',N'員工刪除'),
+(N'Member.Read'   , N'會員讀取'),
+(N'Member.Write'  , N'會員變更'),
+(N'Member.Delete' , N'會員刪除'),
+(N'Category.Write', N'相簿類別變更'),
+(N'PhotoAlbum.Write', N'圖片修改'),
+(N'Comment.Write' , N'留言修改');
+
+-- RolePermission: RoleId=1 擁有全部權限
+INSERT INTO dbo.RolePermission(RoleId, PermissionId)
+SELECT 1, PermissionId FROM dbo.Permission;
+
+-- EmployeeRole: EmployeeId=1 擁有 RoleId=1
+INSERT INTO dbo.EmployeeRole(EmployeeId, RoleId)
+SELECT 1, 1;
+
+------------------------------------------------------------
+COMMIT;
+PRINT N'✔ 已完成：建立表格（含 PhotoAlbum）＋初始資料';
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK;
+    THROW;
+END CATCH;
+
