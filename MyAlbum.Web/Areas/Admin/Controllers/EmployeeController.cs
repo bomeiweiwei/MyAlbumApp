@@ -24,14 +24,28 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
 
         public IActionResult Index() => View();
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize(Policy = "perm:Employee.Read")]
         public async Task<IActionResult> GetEmployeeList([FromBody] PageRequestBase<EmployeeListReq> req)
         {
             var resp = await _employeeAccountReadService.GetEmployeeListAsync(req);
             if (resp == null || resp.StatusCode != (long)ReturnCode.Succeeded) return NotFound();
             return Ok(new { items = resp.Data, total = resp.Count });
         }
+
+        /*
+            [HttpGet]
+            [Authorize(Policy = "perm:Employee.Read")]
+            public async Task<IActionResult> Get(int id) { ... }
+
+            [HttpPost, ValidateAntiForgeryToken]
+            [Authorize(Policy = "perm:Employee.Write")]
+            public async Task<IActionResult> Update([FromBody] EmployeeUpdateReq req) { ... }
+
+            [HttpPost, ValidateAntiForgeryToken]
+            [Authorize(Policy = "perm:Employee.Delete")]
+            public async Task<IActionResult> Delete([FromBody] IdReq req) { ... }
+         */
     }
 }
 

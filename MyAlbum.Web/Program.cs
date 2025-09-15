@@ -62,6 +62,10 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser()
               .AddAuthenticationSchemes("AdminAuth")
               .RequireClaim("UserType", LoginUserType.Employee.GetDescription()));
+
+    options.AddPolicy("perm:Employee.Read", p => p.RequireClaim("perm", "Employee.Read"));
+    options.AddPolicy("perm:Employee.Write", p => p.RequireClaim("perm", "Employee.Write"));
+    options.AddPolicy("perm:Employee.Delete", p => p.RequireClaim("perm", "Employee.Delete"));
 });
 
 builder.Services.AddAntiforgery(o => o.HeaderName = "RequestVerificationToken");

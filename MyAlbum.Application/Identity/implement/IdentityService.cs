@@ -48,6 +48,7 @@ namespace MyAlbum.Application.Identity.implement
             result.AccountId = account.AccountId;
             result.FullName = account.FullName;
             result.UserType = account.UserType;
+            result.EmployeeId = account.EmployeeId;
             return result;
         }
     }

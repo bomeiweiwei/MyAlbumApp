@@ -17,7 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Employee\" />
-    <Folder Include="Account\" />
     <Folder Include="Identity\" />
     <Folder Include="ViewModel\" />
     <Folder Include="ViewModel\Identity\" />

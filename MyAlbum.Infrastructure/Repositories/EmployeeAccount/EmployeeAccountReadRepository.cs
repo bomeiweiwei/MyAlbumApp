@@ -35,6 +35,7 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
                                  where account.LoginName == req.LoginName && account.UserType == 1
                                  select new AccountDto()
                                  {
+                                     EmployeeId = emp.EmployeeId,
                                      AccountId = account.AccountId,
                                      LoginName = account.LoginName,
                                      IsActive = account.IsActive,

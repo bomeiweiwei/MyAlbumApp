@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyAlbum.Application.Identity;
+using MyAlbum.Application.RolePerm;
 using MyAlbum.Models.Identity;
 using MyAlbum.Models.ViewModel.Identity;
+using MyAlbum.Shared.Enums;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,9 +20,11 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
     public class IdentityController : Controller
     {
         private readonly IIdentityService _iIdentityService;
-        public IdentityController(IIdentityService iIdentityService)
+        private readonly IEmpRolePermissionService _empRolePermissionService;
+        public IdentityController(IIdentityService iIdentityService, IEmpRolePermissionService empRolePermissionService)
         {
             _iIdentityService = iIdentityService;
+            _empRolePermissionService = empRolePermissionService;
         }
 
         // GET: /<controller>/
@@ -53,6 +57,12 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
                 return View(model);
             }
 
+            List<string> permCodes = new List<string>();
+            // 例如 Login 成功後
+            var permCodesResp = await _empRolePermissionService.GetEmpRolePermissionCodesAsync(loginResult.EmployeeId);
+            if (permCodesResp.StatusCode == (long)ReturnCode.Succeeded && permCodesResp.Data.Count > 0)
+                permCodes = permCodesResp.Data;
+
             // 構造 Claims（重點：帶上 UserType 以配合授權政策）
             var claims = new List<Claim>
             {
@@ -60,6 +70,7 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
                 new Claim(ClaimTypes.Name, loginResult.FullName),
                 new Claim("UserType", loginResult.UserType)
             };
+            claims.AddRange(permCodes.Select(p => new Claim("perm", p)));
 
             // 依 UserType 選擇對應的 Cookie Scheme
             var scheme = "AdminAuth";

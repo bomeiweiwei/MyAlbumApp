@@ -1,9 +1,19 @@
 ﻿@using MyAlbum.Models.Shared
+@using System.Text.Json
+
 @{
     ViewData["Title"] = "員工清單";
     var listUrl = Url.Action("GetEmployeeList", "Employee", new { area = "Admin" });
 }
-
+@{
+    var perm = new
+    {
+        canRead = User.HasClaim("perm", "Employee.Read"),
+        canUpdate = User.HasClaim("perm", "Employee.Write"),
+        canDelete = User.HasClaim("perm", "Employee.Delete")
+    };
+}
+<script>window.PERM = @Html.Raw(JsonSerializer.Serialize(perm));</script>
 <script src="~/js/simple-grid.js"></script>
 
 <div class="container py-3">
@@ -15,13 +25,7 @@
         <div class="col-auto">
             <input type="text" class="form-control" name="FullName" placeholder="姓名（模糊查）">
         </div>
-        <div class="col-auto">
-            <select class="form-select" name="PageSize" id="pageSizeSel">
-                <option>10</option>
-                <option>20</option>
-                <option>50</option>
-            </select>
-        </div>
+
         <div class="col-auto">
             <button class="btn btn-primary" type="submit">查詢</button>
         </div>
@@ -36,11 +40,22 @@
         TotalId = "empTotal",
         PageSize = 10,
         Columns = new List<GridColumn> {
-            new("employeeId", "EmployeeId", "110px"),
-            new("fullName",   "FullName"),
-            new("title",      "Title"),
-            new("hireDate",   "HireDate", null, "date"),
-            new("isActive",   "IsActive", "90px", "bool")
+            new("fullName",   "姓名"),
+            new("title",      "職稱"),
+            new("hireDate",   "雇用日期", null, "date"),
+            new("isActive",   "啟用", "90px", "bool"),
+            new("employeeId", "操作", null, "actions")
         }
     })
 </div>
+<script>
+    window.cellFormatters = Object.assign({}, window.cellFormatters, {
+      actions: (id, row) => {
+        const b=[];
+        if (window.PERM?.canRead)   b.push(`<button class="btn btn-sm btn-outline-secondary me-1" onclick="viewEmp(${id})">檢視</button>`);
+        if (window.PERM?.canUpdate) b.push(`<button class="btn btn-sm btn-primary me-1" onclick="editEmp(${id})">更新</button>`);
+        if (window.PERM?.canDelete) b.push(`<button class="btn btn-sm btn-danger" onclick="delEmp(${id})">刪除</button>`);
+        return b.join("");
+      }
+    });
+</script>
