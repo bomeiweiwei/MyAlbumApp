@@ -64,6 +64,8 @@ builder.Services.AddAuthorization(options =>
               .RequireClaim("UserType", LoginUserType.Employee.GetDescription()));
 });
 
+builder.Services.AddAntiforgery(o => o.HeaderName = "RequestVerificationToken");
+
 // 初始化設定
 ConfigurationManager configuration = builder.Configuration;
 ConfigManager.Initial(configuration);

@@ -1,0 +1,43 @@
+﻿@model MyAlbum.Models.Shared.GridOptions
+@{
+    // 確保有唯一 id（允許一頁多個 grid）
+    var tableId = Model.TableId;
+    var pagerId = Model.PagerId;
+    var totalId = Model.TotalId;
+    var formId = Model.SearchFormId;
+    var listUrl = Model.ListUrl;
+    var optJson = System.Text.Json.JsonSerializer.Serialize(Model);
+}
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm align-middle">
+        <thead>
+            <tr>
+                @foreach (var c in Model.Columns)
+                {
+                    <th style="@(string.IsNullOrWhiteSpace(c.Width) ? "" : $"width:{c.Width};")">@c.Title</th>
+                }
+            </tr>
+        </thead>
+        <tbody id="@tableId">
+            <tr><td colspan="@Model.Columns.Count" class="text-center text-muted">載入中…</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex justify-content-between align-items-center">
+    <div id="@pagerId" class="btn-group" role="group" aria-label="Pagination"></div>
+    <div id="@totalId" class="small text-muted"></div>
+</div>
+
+<script>
+  window.SimpleGrid = window.SimpleGrid || {};
+    (function () {
+        // 延後初始化，等 simple-grid.js 載入
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.SimpleGrid && typeof window.SimpleGrid.init === 'function') {
+                window.SimpleGrid.init(@Html.Raw(optJson));
+            }
+        });
+    })();
+</script>
