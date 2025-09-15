@@ -8,6 +8,9 @@
 <form asp-action="Login" method="post">
     @Html.AntiForgeryToken()
 
+    <!-- 顯示整體表單錯誤 -->
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
     <div class="mb-3">
         <label asp-for="UserName" class="form-label"></label>
         <input asp-for="UserName" class="form-control" autocomplete="username" />
