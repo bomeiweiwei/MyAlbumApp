@@ -33,6 +33,16 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
             return Ok(new { items = resp.Data, total = resp.Count });
         }
 
+        [HttpGet]
+        [Authorize(Policy = "perm:Employee.Read")]
+        public async Task<IActionResult> GetEmployee(int id)
+        {
+            GetEmployeeReq req = new GetEmployeeReq() { EmployeeId = id };
+            var resp = await _employeeAccountReadService.GetEmployeeDataByIdAsync(req);
+            if (resp == null || resp.StatusCode != (long)ReturnCode.Succeeded) return NotFound();
+            return Ok(resp.Data);
+        }
+
         /*
             [HttpGet]
             [Authorize(Policy = "perm:Employee.Read")]

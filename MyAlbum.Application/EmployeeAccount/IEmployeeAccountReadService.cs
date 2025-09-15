@@ -10,6 +10,8 @@ namespace MyAlbum.Application.EmployeeAccount
         Task<ResponseBase<AccountDto?>> GetEmployeeAsync(GetEmployeeReq req, CancellationToken ct = default);
 
         Task<ResponseBase<List<EmployeeItem>>> GetEmployeeListAsync(PageRequestBase<EmployeeListReq> req, CancellationToken ct = default);
+
+        Task<ResponseBase<EmployeeDto>> GetEmployeeDataByIdAsync(GetEmployeeReq req, CancellationToken ct = default);
     }
 }
 

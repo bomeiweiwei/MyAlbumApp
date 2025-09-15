@@ -4,17 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyAlbum.Models.Account
+namespace MyAlbum.Models.Employee
 {
-    public class AccountDto
+    public class EmployeeDto
     {
-        public Guid AccountId { get; set; }
-        public string? LoginName { get; set; }
-        public bool IsActive { get; set; }
-        public string UserType { get; set; }
-        public string FullName { get; set; }
-        public string PasswordHash { get; set; }
         public int EmployeeId { get; set; }
+        public bool IsActive { get; set; }
+        public string FullName { get; set; }
         public string Title { get; set; }
         public DateOnly? HireDate { get; set; }
     }

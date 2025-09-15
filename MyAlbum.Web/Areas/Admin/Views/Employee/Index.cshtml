@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "員工清單";
     var listUrl = Url.Action("GetEmployeeList", "Employee", new { area = "Admin" });
+    var detailUrl = Url.Action("GetEmployee", "Employee", new { area = "Admin" });
 }
 @{
     var perm = new
@@ -48,14 +49,83 @@
         }
     })
 </div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">員工明細</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row" id="detailsBody">
+                    <!-- 動態填入 -->
+                </dl>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">關閉</button></div>
+        </div>
+    </div>
+</div>
+
 <script>
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        return str.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
     window.cellFormatters = Object.assign({}, window.cellFormatters, {
       actions: (id, row) => {
         const b=[];
-        if (window.PERM?.canRead)   b.push(`<button class="btn btn-sm btn-outline-secondary me-1" onclick="viewEmp(${id})">檢視</button>`);
+        if (window.PERM?.canRead)   b.push(`<button class="btn btn-sm btn-outline-secondary me-1" onclick="openDetails(${id})">檢視</button>`);
         if (window.PERM?.canUpdate) b.push(`<button class="btn btn-sm btn-primary me-1" onclick="editEmp(${id})">更新</button>`);
         if (window.PERM?.canDelete) b.push(`<button class="btn btn-sm btn-danger" onclick="delEmp(${id})">刪除</button>`);
         return b.join("");
       }
     });
+    window.openDetails = async function(id){
+        const detailUrl = '@detailUrl';
+        const url = `${detailUrl}?id=${id}`;
+        const res = await fetch(url);
+        if (!res.ok){ alert("查無資料"); return; }
+        const d = await res.json();
+        const dl = document.getElementById('detailsBody');
+
+        const hireDate = d.hireDate ? d.hireDate.substring(0,10) : "未設定";
+
+        dl.innerHTML = `
+            <dt class="col-4">姓名</dt><dd class="col-8">${escapeHtml(d.fullName)}</dd>
+            <dt class="col-4">職稱</dt><dd class="col-8">${escapeHtml(d.title ?? "")}</dd>
+            <dt class="col-4">到職日</dt><dd class="col-8">${hireDate}</dd>
+            <dt class="col-4">啟用</dt><dd class="col-8">${d.isActive ? "✅" : "❌"}</dd>
+        `;
+        detailsModal.show();
+    };
+    window.editEmp = async function(id){
+        console.log('editEmp', id)
+    };
+    window.delEmp  = async function(id){
+      if(!confirm(`確定刪除 #${id}？`)) return;
+      const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? "";
+      const res = await fetch('@Url.Action("Delete", "Employee", new { area = "Admin" })', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json','RequestVerificationToken': token },
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) {
+          document.querySelector('#empSearch')?.dispatchEvent(new Event('submit')); 
+      }
+      else alert('刪除失敗');
+    };
 </script>
+@section Scripts {
+    <script>
+        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    </script>
+}

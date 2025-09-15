@@ -30,19 +30,25 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
             using var ctx = _factory.Create(ConnectionMode.Slave);
             var db = ctx.AsDbContext<AlbumContext>();
 
-            result.Data = await (from emp in db.Employees.AsNoTracking()
-                                 join account in db.Accounts.AsNoTracking() on emp.AccountId equals account.AccountId
-                                 where account.LoginName == req.LoginName && account.UserType == 1
-                                 select new AccountDto()
-                                 {
-                                     EmployeeId = emp.EmployeeId,
-                                     AccountId = account.AccountId,
-                                     LoginName = account.LoginName,
-                                     IsActive = account.IsActive,
-                                     UserType = LoginUserType.Employee.GetDescription(),
-                                     FullName = emp.FullName,
-                                     PasswordHash = account.PasswordHash
-                                 }).FirstOrDefaultAsync(ct);
+            var query = from emp in db.Employees.AsNoTracking()
+                        join account in db.Accounts.AsNoTracking() on emp.AccountId equals account.AccountId
+                        where account.UserType == 1
+                        select new AccountDto()
+                        {
+                            EmployeeId = emp.EmployeeId,
+                            AccountId = account.AccountId,
+                            LoginName = account.LoginName,
+                            IsActive = account.IsActive,
+                            UserType = LoginUserType.Employee.GetDescription(),
+                            FullName = emp.FullName,
+                            PasswordHash = account.PasswordHash
+                        };
+            if (req.EmployeeId > 0)
+                query = query.Where(m => m.EmployeeId == req.EmployeeId);
+            if (!string.IsNullOrWhiteSpace(req.LoginName))
+                query = query.Where(m => m.LoginName == req.LoginName);
+
+            result.Data = await query.FirstOrDefaultAsync(ct);
             return result;
         }
         /// <summary>

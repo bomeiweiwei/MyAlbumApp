@@ -16,7 +16,6 @@
     <None Remove="RolePerm\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Employee\" />
     <Folder Include="Identity\" />
     <Folder Include="ViewModel\" />
     <Folder Include="ViewModel\Identity\" />
