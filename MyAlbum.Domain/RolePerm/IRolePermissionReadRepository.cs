@@ -8,6 +8,12 @@ namespace MyAlbum.Domain.RolePerm
 {
 	public interface IRolePermissionReadRepository
 	{
+        /// <summary>
+        /// 取得角色權限代碼
+        /// </summary>
+        /// <param name="roleIds"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         Task<ResponseBase<List<string>>> GetRolePermissionCodesAsync(List<int> roleIds, CancellationToken ct = default);
     }
 }

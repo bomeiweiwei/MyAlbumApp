@@ -27,7 +27,6 @@
     <Folder Include="EF\Models\" />
     <Folder Include="Note\" />
     <Folder Include="EF\Extensions\" />
-    <Folder Include="Repositories\" />
     <Folder Include="Repositories\EmployeeAccount\" />
     <Folder Include="Repositories\RolePerm\" />
   </ItemGroup>

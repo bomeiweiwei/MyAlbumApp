@@ -13,7 +13,12 @@ namespace MyAlbum.Infrastructure.Repositories.RolePerm
     {
         private readonly IAlbumDbContextFactory _factory;
         public RolePermissionReadRepository(IAlbumDbContextFactory factory) => _factory = factory;
-
+        /// <summary>
+        /// 取得角色權限代碼
+        /// </summary>
+        /// <param name="roleIds"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         public async Task<ResponseBase<List<string>>> GetRolePermissionCodesAsync(List<int> roleIds, CancellationToken ct = default)
         {
             var result = new ResponseBase<List<string>>();
