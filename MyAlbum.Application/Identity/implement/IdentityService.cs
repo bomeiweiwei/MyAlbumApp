@@ -5,6 +5,7 @@ using MyAlbum.Domain;
 using MyAlbum.Models.Account;
 using MyAlbum.Models.Employee;
 using MyAlbum.Models.Identity;
+using MyAlbum.Shared.Enums;
 
 namespace MyAlbum.Application.Identity.implement
 {
@@ -28,9 +29,13 @@ namespace MyAlbum.Application.Identity.implement
             {
                 LoginName = req.LoginName
             };
-            var account = await _employeeAccountReadService.GetEmployeeAsync(getEmployeeReq);
-            if (account == null)
+            var accountResp = await _employeeAccountReadService.GetEmployeeAsync(getEmployeeReq);
+            if (accountResp == null || accountResp.StatusCode != (long)ReturnCode.Succeeded)
                 return result;
+            if(accountResp.Data==null)
+                return result;
+            var account = accountResp.Data;
+
             if (account.IsActive == false)
                 return result;
             var verify = _hasher.VerifyHashedPassword(account, account.PasswordHash, req.Password);

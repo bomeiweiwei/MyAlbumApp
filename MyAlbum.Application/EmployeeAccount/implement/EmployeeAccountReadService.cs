@@ -1,6 +1,7 @@
 ﻿using System;
 using MyAlbum.Domain;
 using MyAlbum.Domain.EmployeeAccount;
+using MyAlbum.Models;
 using MyAlbum.Models.Account;
 using MyAlbum.Models.Employee;
 
@@ -14,7 +15,7 @@ namespace MyAlbum.Application.EmployeeAccount.implement
             _repo = repo;
         }
 
-        public async Task<AccountDto?> GetEmployeeAsync(GetEmployeeReq req, CancellationToken ct = default)
+        public async Task<ResponseBase<AccountDto?>> GetEmployeeAsync(GetEmployeeReq req, CancellationToken ct = default)
         {
             return await _repo.GetEmployeeAsync(req, ct);
         }

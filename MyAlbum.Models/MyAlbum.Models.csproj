@@ -20,4 +20,7 @@
     <Folder Include="ViewModel\" />
     <Folder Include="ViewModel\Identity\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
+  </ItemGroup>
 </Project>

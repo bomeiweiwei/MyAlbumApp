@@ -4,6 +4,7 @@ using MyAlbum.Domain;
 using MyAlbum.Domain.EmployeeAccount;
 using MyAlbum.Infrastructure.EF;
 using MyAlbum.Infrastructure.EF.Data;
+using MyAlbum.Models;
 using MyAlbum.Models.Account;
 using MyAlbum.Models.Employee;
 using MyAlbum.Shared.Enums;
@@ -21,24 +22,25 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
         /// <param name="req"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        public async Task<AccountDto?> GetEmployeeAsync(GetEmployeeReq req, CancellationToken ct = default)
+        public async Task<ResponseBase<AccountDto?>> GetEmployeeAsync(GetEmployeeReq req, CancellationToken ct = default)
         {
+            var result = new ResponseBase<AccountDto?>();
             using var ctx = _factory.Create(ConnectionMode.Slave);
             var db = ctx.AsDbContext<AlbumContext>();
 
-            var query = await (from emp in db.Employees.AsNoTracking()
-                               join account in db.Accounts.AsNoTracking() on emp.AccountId equals account.AccountId
-                               where account.LoginName == req.LoginName && account.UserType == 1
-                               select new AccountDto()
-                               {
-                                   AccountId = account.AccountId,
-                                   LoginName = account.LoginName,
-                                   IsActive = account.IsActive,
-                                   UserType = LoginUserType.Employee.GetDescription(),
-                                   FullName = emp.FullName,
-                                   PasswordHash = account.PasswordHash
-                               }).FirstOrDefaultAsync(ct);
-            return query;
+            result.Data = await (from emp in db.Employees.AsNoTracking()
+                                 join account in db.Accounts.AsNoTracking() on emp.AccountId equals account.AccountId
+                                 where account.LoginName == req.LoginName && account.UserType == 1
+                                 select new AccountDto()
+                                 {
+                                     AccountId = account.AccountId,
+                                     LoginName = account.LoginName,
+                                     IsActive = account.IsActive,
+                                     UserType = LoginUserType.Employee.GetDescription(),
+                                     FullName = emp.FullName,
+                                     PasswordHash = account.PasswordHash
+                                 }).FirstOrDefaultAsync(ct);
+            return result;
         }
     }
 }
