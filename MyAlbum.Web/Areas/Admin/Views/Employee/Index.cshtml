@@ -1,0 +1,212 @@
+﻿@{
+    ViewData["Title"] = "員工清單";
+    var listUrl = Url.Action("GetEmployeeList", "Employee", new { area = "Admin" });
+}
+
+<div class="container py-3">
+    <h3 class="mb-3">@ViewData["Title"]</h3>
+
+    <!-- 查詢條件 -->
+    <form id="searchForm" class="row g-2 mb-3">
+        @Html.AntiForgeryToken()
+        <div class="col-auto">
+            <input type="text" class="form-control" id="fullName" placeholder="姓名（支援模糊查）">
+        </div>
+        <div class="col-auto">
+            <select id="pageSize" class="form-select">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" type="submit">查詢</button>
+        </div>
+    </form>
+
+    <!-- 清單表格 -->
+    <div class="table-responsive">
+        <table class="table table-striped table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>FullName</th>
+                    <th>Title</th>
+                    <th>HireDate</th>
+                    <th>IsActive</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+                <tr><td colspan="5" class="text-center text-muted">請執行查詢…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分頁列： < 1 2 3 >  共N筆 -->
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <div id="pager" class="btn-group" role="group" aria-label="Pagination"></div>
+        <div id="totalInfo" class="small text-muted"></div>
+    </div>
+</div>
+
+<script>
+    const state = {
+        pageIndex: 1,
+        pageSize: 10,
+        fullName: "",
+        total: 0
+    };
+    const MAX_PAGE_BTNS = 7; // 最多顯示 7 個頁碼按鈕
+
+    const tbody = document.getElementById('tbody');
+    const pager = document.getElementById('pager');
+    const totalInfo = document.getElementById('totalInfo');
+
+    // Anti-Forgery
+    function getRequestVerificationToken() {
+        const input = document.querySelector('input[name="__RequestVerificationToken"]');
+        return input ? input.value : "";
+    }
+
+    async function loadList() {
+        const payload = {
+            pageIndex: state.pageIndex,
+            pageSize: state.pageSize,
+            data: { fullName: state.fullName || null }
+        };
+
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">載入中…</td></tr>`;
+
+        const res = await fetch('@listUrl', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': getRequestVerificationToken()
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">讀取失敗 (${res.status})</td></tr>`;
+            pager.innerHTML = "";
+            totalInfo.textContent = "";
+            return;
+        }
+
+        const data = await res.json(); // { items, total }
+        const items = data.items ?? [];
+        state.total = Number(data.total ?? 0);
+
+        renderTable(items);
+        renderPager();
+    }
+
+    function renderTable(items) {
+        if (!items || items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">查無資料</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = items.map(it => `
+            <tr>
+              <td>${html(it.fullName)}</td>
+              <td>${html(it.title ?? "")}</td>
+              <td>${formatDate(it.hireDate)}</td>
+              <td>${it.isActive ? "✅" : "❌"}</td>
+            </tr>
+          `).join("");
+    }
+
+    function renderPager() {
+        const pages = Math.max(1, Math.ceil(state.total / state.pageSize));
+        const cur = Math.min(Math.max(1, state.pageIndex), pages);
+        state.pageIndex = cur;
+
+        // 計算要顯示的頁碼範圍（窗口式）
+        let start = Math.max(1, cur - Math.floor(MAX_PAGE_BTNS / 2));
+        let end = start + MAX_PAGE_BTNS - 1;
+        if (end > pages) {
+            end = pages;
+            start = Math.max(1, end - MAX_PAGE_BTNS + 1);
+        }
+
+        // 清空並重建
+        pager.innerHTML = "";
+
+        // Prev: "<"
+        pager.appendChild(makePageBtn("<", cur - 1, cur === 1));
+
+        // 1 … (若 start > 2)
+        if (start > 1) {
+            pager.appendChild(makePageBtn("1", 1, false, cur === 1));
+            if (start > 2) pager.appendChild(makeEllipsis());
+        }
+
+        // 中間窗口
+        for (let p = start; p <= end; p++) {
+            pager.appendChild(makePageBtn(String(p), p, false, p === cur));
+        }
+
+        // … last (若 end < pages-1)
+        if (end < pages) {
+            if (end < pages - 1) pager.appendChild(makeEllipsis());
+            pager.appendChild(makePageBtn(String(pages), pages, false, cur === pages));
+        }
+
+        // Next: ">"
+        pager.appendChild(makePageBtn(">", cur + 1, cur === pages));
+
+        // 共 N 筆
+        totalInfo.textContent = `共 ${state.total} 筆`;
+    }
+
+    function makePageBtn(text, page, disabled = false, active = false) {
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = `btn btn-sm ${active ? 'btn-primary' : 'btn-outline-secondary'}`;
+        btn.textContent = text;
+        btn.disabled = disabled;
+        btn.onclick = () => {
+            if (disabled) return;
+            state.pageIndex = page;
+            loadList();
+        };
+        return btn;
+    }
+
+    function makeEllipsis() {
+        const span = document.createElement('span');
+        span.className = "btn btn-sm btn-outline-secondary disabled";
+        span.textContent = "…";
+        return span;
+    }
+
+    function html(s) {
+        return (s ?? "").toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function formatDate(s) {
+        if (!s) return "";
+        if (/^\/Date\(\d+\)\/$/.test(s)) {
+            const ms = parseInt(s.match(/\d+/)[0], 10);
+            const d = new Date(ms);
+            return d.toISOString().substring(0, 10);
+        }
+        return s.toString().substring(0, 10);
+    }
+
+    // 查詢送出
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.fullName = document.getElementById('fullName').value.trim();
+        state.pageSize = parseInt(document.getElementById('pageSize').value, 10) || 10;
+        state.pageIndex = 1;
+        loadList();
+    });
+
+    // 初次載入
+    loadList();
+</script>

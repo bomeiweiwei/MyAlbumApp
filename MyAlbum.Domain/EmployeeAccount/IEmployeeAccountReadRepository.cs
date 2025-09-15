@@ -14,6 +14,13 @@ namespace MyAlbum.Domain.EmployeeAccount
         /// <param name="ct"></param>
         /// <returns></returns>
         Task<ResponseBase<AccountDto?>> GetEmployeeAsync(GetEmployeeReq req, CancellationToken ct = default);
+        /// <summary>
+        /// 取得員工列表資料
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<ResponseBase<List<EmployeeItem>>> GetEmployeeListAsync(PageRequestBase<EmployeeListReq> req, CancellationToken ct = default);
     }
 }
 

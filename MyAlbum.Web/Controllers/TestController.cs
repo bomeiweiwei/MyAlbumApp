@@ -7,6 +7,7 @@ using MyAlbum.Application.EmployeeAccount;
 using MyAlbum.Application.Identity;
 using MyAlbum.Application.Identity.implement;
 using MyAlbum.Application.Test;
+using MyAlbum.Models;
 using MyAlbum.Models.Employee;
 using MyAlbum.Models.Identity;
 
@@ -20,12 +21,12 @@ namespace MyAlbum.Web.Controllers
     {
         private readonly IWebHostEnvironment _env;
         private readonly ITestService _testService;
-        private readonly IIdentityService _identityService;
-        public TestController(IWebHostEnvironment env, ITestService testService, IIdentityService identityService)
+        private readonly IEmployeeAccountReadService _employeeAccountReadService;
+        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountReadService employeeAccountReadService)
         {
             _env = env;
             _testService = testService;
-            _identityService = identityService;
+            _employeeAccountReadService = employeeAccountReadService;
         }
         /// <summary>
         /// 取得環境變數
@@ -51,10 +52,10 @@ namespace MyAlbum.Web.Controllers
         }
 
         [HttpPost]
-        [Route("TestLogin")]
-        public async Task<IActionResult> TestLogin(LoginReq req)
+        [Route("GetEmployeeList")]
+        public async Task<IActionResult> GetEmployeeList(PageRequestBase<EmployeeListReq> req)
         {
-            var dto = await _identityService.Login(req);
+            var dto = await _employeeAccountReadService.GetEmployeeListAsync(req);
             if (dto is null) return NotFound();
             return Ok(dto);
         }

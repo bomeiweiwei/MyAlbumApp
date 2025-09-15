@@ -4,6 +4,8 @@ using MyAlbum.Domain;
 using MyAlbum.Domain.EmployeeAccount;
 using MyAlbum.Infrastructure.EF;
 using MyAlbum.Infrastructure.EF.Data;
+using MyAlbum.Infrastructure.EF.Extensions;
+using MyAlbum.Infrastructure.EF.Models;
 using MyAlbum.Models;
 using MyAlbum.Models.Account;
 using MyAlbum.Models.Employee;
@@ -40,6 +42,41 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
                                      FullName = emp.FullName,
                                      PasswordHash = account.PasswordHash
                                  }).FirstOrDefaultAsync(ct);
+            return result;
+        }
+        /// <summary>
+        /// 取得員工列表資料
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public async Task<ResponseBase<List<EmployeeItem>>> GetEmployeeListAsync(PageRequestBase<EmployeeListReq> req, CancellationToken ct = default)
+        {
+            var result = new ResponseBase<List<EmployeeItem>>()
+            {
+                Data = new List<EmployeeItem>()
+            };
+
+            using var ctx = _factory.Create(ConnectionMode.Slave);
+            var db = ctx.AsDbContext<AlbumContext>();
+
+            var query = from emp in db.Employees.AsNoTracking()
+                        join account in db.Accounts.AsNoTracking() on emp.AccountId equals account.AccountId
+                        select new EmployeeItem()
+                        {
+                            EmployeeId = emp.EmployeeId,
+                            FullName = emp.FullName,
+                            Title = emp.Title,
+                            HireDate = emp.HireDate,
+                            IsActive = emp.IsActive
+                        };
+            if (!string.IsNullOrWhiteSpace(req.Data.FullName))
+            {
+                query = query.Where(m => m.FullName.Contains(req.Data.FullName));
+            }
+
+            result.Count = await query.CountAsync();
+            result.Data = await query.Pagination(req.PageIndex, req.PageSize).ToListAsync(ct);
             return result;
         }
     }

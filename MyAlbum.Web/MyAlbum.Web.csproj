@@ -28,6 +28,7 @@
     <None Remove="Areas\Admin\Views\" />
     <None Remove="Areas\Admin\Views\Home\" />
     <None Remove="Areas\Admin\Views\Identity\" />
+    <None Remove="Areas\Admin\Views\Employee\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Note\" />
@@ -37,6 +38,7 @@
     <Folder Include="Areas\Admin\Views\" />
     <Folder Include="Areas\Admin\Views\Home\" />
     <Folder Include="Areas\Admin\Views\Identity\" />
+    <Folder Include="Areas\Admin\Views\Employee\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">

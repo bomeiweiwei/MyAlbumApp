@@ -19,6 +19,11 @@ namespace MyAlbum.Application.EmployeeAccount.implement
         {
             return await _repo.GetEmployeeAsync(req, ct);
         }
+
+        public async Task<ResponseBase<List<EmployeeItem>>> GetEmployeeListAsync(PageRequestBase<EmployeeListReq> req, CancellationToken ct = default)
+        {
+            return await _repo.GetEmployeeListAsync(req, ct);
+        }
     }
 }
 
