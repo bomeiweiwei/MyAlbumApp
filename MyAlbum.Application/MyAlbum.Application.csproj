@@ -18,6 +18,8 @@
     <None Remove="EmployeeAccount\implement\" />
     <None Remove="Identity\" />
     <None Remove="Identity\implement\" />
+    <None Remove="RolePerm\" />
+    <None Remove="RolePerm\implement\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Test\" />
@@ -26,6 +28,8 @@
     <Folder Include="EmployeeAccount\implement\" />
     <Folder Include="Identity\" />
     <Folder Include="Identity\implement\" />
+    <Folder Include="RolePerm\" />
+    <Folder Include="RolePerm\implement\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />

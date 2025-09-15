@@ -19,6 +19,7 @@
     <None Remove="EF\Extensions\" />
     <None Remove="Repositories\" />
     <None Remove="Repositories\EmployeeAccount\" />
+    <None Remove="Repositories\RolePerm\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EF\" />
@@ -28,6 +29,7 @@
     <Folder Include="EF\Extensions\" />
     <Folder Include="Repositories\" />
     <Folder Include="Repositories\EmployeeAccount\" />
+    <Folder Include="Repositories\RolePerm\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
