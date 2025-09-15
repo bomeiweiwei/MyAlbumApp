@@ -10,10 +10,14 @@
     <None Remove="Employee\" />
     <None Remove="Account\" />
     <None Remove="Identity\" />
+    <None Remove="ViewModel\" />
+    <None Remove="ViewModel\Identity\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Employee\" />
     <Folder Include="Account\" />
     <Folder Include="Identity\" />
+    <Folder Include="ViewModel\" />
+    <Folder Include="ViewModel\Identity\" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,25 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+
+<ul class="navbar-nav ms-auto">
+    @if (User.Identity?.IsAuthenticated == true && User.HasClaim("UserType", "Employee"))
+    {
+        <li class="nav-item">
+            <span class="nav-link text-dark">
+                👤 @User.Identity.Name
+            </span>
+        </li>
+        <li class="nav-item">
+            <form asp-area="Admin" asp-controller="Identity" asp-action="Logout" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-link nav-link">登出</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Admin" asp-controller="Identity" asp-action="Login">登入</a>
+        </li>
+    }
+</ul>
