@@ -19,6 +19,7 @@ using MyAlbum.Shared.Enums;
 namespace MyAlbum.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Policy = "perm:Employee.Read")]
     public class EmployeeController : Controller
     {
         private readonly IEmployeeAccountReadService _employeeAccountReadService;
@@ -32,7 +33,6 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
         public IActionResult Index() => View();
 
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Policy = "perm:Employee.Read")]
         public async Task<IActionResult> IndexPartial([FromBody] PageRequestBase<EmployeeListReq> req)
         {
             var resp = await _employeeAccountReadService.GetEmployeeListAsync(req);
@@ -57,7 +57,6 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Policy = "perm:Employee.Read")]
         public async Task<IActionResult> GetEmployeeList([FromBody] PageRequestBase<EmployeeListReq> req)
         {
             var resp = await _employeeAccountReadService.GetEmployeeListAsync(req);
@@ -66,7 +65,6 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "perm:Employee.Read")]
         public async Task<IActionResult> DetailsPartial(int id)
         {
             var req = new GetEmployeeReq { EmployeeId = id };
@@ -78,7 +76,6 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "perm:Employee.Read")]
         public async Task<IActionResult> GetEmployee(int id)
         {
             GetEmployeeReq req = new GetEmployeeReq() { EmployeeId = id };
