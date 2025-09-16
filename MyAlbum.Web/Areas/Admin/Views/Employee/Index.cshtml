@@ -1,56 +1,134 @@
-﻿@using MyAlbum.Models.Shared
-@using System.Text.Json
+﻿@{
+    ViewData["Title"] = "員工列表";
+}
+@section Scripts{
+    <script>
+  // 讀 Anti-Forgery token（由 Html.AntiForgeryToken() 產生）
+  function getAfToken(){
+    const el = document.querySelector('input[name="__RequestVerificationToken"]');
+    return el ? el.value : '';
+  }
 
-@{
-    ViewData["Title"] = "員工清單";
-    var listUrl = Url.Action("GetEmployeeList", "Employee", new { area = "Admin" });
-    var detailUrl = Url.Action("GetEmployee", "Employee", new { area = "Admin" });
-}
-@{
-    var perm = new
-    {
-        canRead = User.HasClaim("perm", "Employee.Read"),
-        canUpdate = User.HasClaim("perm", "Employee.Write"),
-        canDelete = User.HasClaim("perm", "Employee.Delete")
+  // 主查詢函式：你可手動呼叫，或由按鈕/事件觸發
+  async function submitSearch(pageIndex){
+    const form = document.getElementById('searchForm');
+    const pageSize = document.getElementById('pageSizeInput').value || 10;
+    const fullName = document.querySelector('input[name="Data.FullName"]').value || '';
+
+    // 允許外部指定頁碼；未指定則維持目前值
+    const currentPage = pageIndex ?? Number(form.querySelector('[name="PageIndex"]').value || 1);
+
+    // 更新表單內的隱藏欄位（保持 UI 與狀態一致）
+    form.querySelector('[name="PageIndex"]').value = currentPage;
+
+    const payload = {
+      PageIndex: currentPage,
+      PageSize: Number(pageSize),
+        Data: {
+            FullName: fullName
+        }
     };
+    const resp = await fetch('@Url.Action("IndexPartial","Employee", new { area="Admin" })', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': getAfToken()
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const html = await resp.text();
+    if (!resp.ok) {
+        console.error(html);
+        document.getElementById('tableHost').innerHTML =
+        `<div class="alert alert-danger">查詢失敗（${resp.status}）。</div>`;
+        return;
+    }
+    // 把部分視圖直接塞進容器
+    document.getElementById('tableHost').innerHTML = html;
+  }
+
+  // 更換每頁筆數：同步隱藏欄位並回第 1 頁查詢
+  function onPageSizeChanged(){
+    const sel = document.getElementById('pageSizeSelect');
+    document.getElementById('pageSizeInput').value = Number(sel.value || 10);
+    document.querySelector('input[name="PageIndex"]').value = 1;
+    submitSearch(1);
+  }
+
+  // 清空再查
+  function resetAndSearch(){
+    const form = document.getElementById('searchForm');
+    form.reset();
+    // 同步 pageSize 隱藏欄位
+    const sel = document.getElementById('pageSizeSelect');
+    document.getElementById('pageSizeInput').value = Number(sel.value || 10);
+    form.querySelector('[name="PageIndex"]').value = 1;
+    submitSearch(1);
+  }
+
+  // 檢視明細（保留你原本的 JSON 取法）
+  async function openDetails(id){
+    const res = await fetch('@Url.Action("GetEmployee","Employee", new { area="Admin" })' + `?id=${id}`);
+    const body = document.getElementById('detailsBody');
+    if (!res.ok){
+      body.innerHTML = '讀取失敗';
+      return new bootstrap.Modal('#detailsModal').show();
+    }
+    const d = await res.json();
+    const toDate = s => s ? s.toString().substring(0,10) : '';
+    body.innerHTML = `
+      <dl class="row">
+        <dt class="col-sm-3">ID</dt><dd class="col-sm-9">${d.employeeId}</dd>
+        <dt class="col-sm-3">姓名</dt><dd class="col-sm-9">${d.fullName ?? ''}</dd>
+        <dt class="col-sm-3">職稱</dt><dd class="col-sm-9">${d.title ?? ''}</dd>
+        <dt class="col-sm-3">到職日</dt><dd class="col-sm-9">${toDate(d.hireDate)}</dd>
+        <dt class="col-sm-3">啟用</dt><dd class="col-sm-9">${d.isActive ? '✅ 啟用' : '⛔ 停用'}</dd>
+      </dl>`;
+    new bootstrap.Modal('#detailsModal').show();
+  }
+
+  // 頁面載入先打一次（預設第 1 頁）
+  document.addEventListener('DOMContentLoaded', () => submitSearch(1));
+    </script>
 }
-<script>window.PERM = @Html.Raw(JsonSerializer.Serialize(perm));</script>
-<script src="~/js/simple-grid.js"></script>
 
 <div class="container py-3">
-    <h3 class="mb-3">@ViewData["Title"]</h3>
 
-    <!-- 可選的查詢表單（name 對應 EmployeeListReq 的屬性） -->
-    <form id="empSearch" class="row g-2 mb-3">
+    <!-- 搜尋列（不用 HTMX，交給你自己的 JS） -->
+    <form id="searchForm" class="row g-2 align-items-center mb-3" onsubmit="event.preventDefault(); submitSearch(1);">
         @Html.AntiForgeryToken()
+
         <div class="col-auto">
-            <input type="text" class="form-control" name="FullName" placeholder="姓名（模糊查）">
+            <label class="col-form-label">姓名</label>
+        </div>
+        <div class="col-auto">
+            <input class="form-control" name="Data.FullName" placeholder="輸入姓名關鍵字">
         </div>
 
         <div class="col-auto">
-            <button class="btn btn-primary" type="submit">查詢</button>
+            <select class="form-select" id="pageSizeSelect" onchange="onPageSizeChanged()">
+                <option value="10" selected>10 筆</option>
+                <option value="20">20 筆</option>
+                <option value="50">50 筆</option>
+            </select>
+            <!-- 真正送出的數字欄位 -->
+            <input type="number" name="PageSize" id="pageSizeInput" value="10" class="d-none" />
+        </div>
+
+        <input type="number" name="PageIndex" value="1" class="d-none" />
+
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">搜尋</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="resetAndSearch()">清空</button>
         </div>
     </form>
 
-    @await Html.PartialAsync("_Grid", new GridOptions
-    {
-        ListUrl = listUrl,
-        SearchFormId = "empSearch",
-        TableId = "empTable",
-        PagerId = "empPager",
-        TotalId = "empTotal",
-        PageSize = 10,
-        Columns = new List<GridColumn> {
-            new("fullName",   "姓名"),
-            new("title",      "職稱"),
-            new("hireDate",   "雇用日期", null, "date"),
-            new("isActive",   "啟用", "90px", "bool"),
-            new("employeeId", "操作", null, "actions")
-        }
-    })
+    <!-- 表格容器（由 submitSearch() 塞入部分視圖） -->
+    <div id="tableHost"></div>
 </div>
 
-<!-- Details Modal -->
+<!-- 明細 Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -58,74 +136,7 @@
                 <h5 class="modal-title">員工明細</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <dl class="row" id="detailsBody">
-                    <!-- 動態填入 -->
-                </dl>
-            </div>
-            <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">關閉</button></div>
+            <div class="modal-body" id="detailsBody">載入中...</div>
         </div>
     </div>
 </div>
-
-<script>
-
-    function escapeHtml(str) {
-        if (str === null || str === undefined) return "";
-        return str.toString()
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
-    }
-
-    window.cellFormatters = Object.assign({}, window.cellFormatters, {
-      actions: (id, row) => {
-        const b=[];
-        if (window.PERM?.canRead)   b.push(`<button class="btn btn-sm btn-outline-secondary me-1" onclick="openDetails(${id})">檢視</button>`);
-        if (window.PERM?.canUpdate) b.push(`<button class="btn btn-sm btn-primary me-1" onclick="editEmp(${id})">更新</button>`);
-        if (window.PERM?.canDelete) b.push(`<button class="btn btn-sm btn-danger" onclick="delEmp(${id})">刪除</button>`);
-        return b.join("");
-      }
-    });
-    window.openDetails = async function(id){
-        const detailUrl = '@detailUrl';
-        const url = `${detailUrl}?id=${id}`;
-        const res = await fetch(url);
-        if (!res.ok){ alert("查無資料"); return; }
-        const d = await res.json();
-        const dl = document.getElementById('detailsBody');
-
-        const hireDate = d.hireDate ? d.hireDate.substring(0,10) : "未設定";
-
-        dl.innerHTML = `
-            <dt class="col-4">姓名</dt><dd class="col-8">${escapeHtml(d.fullName)}</dd>
-            <dt class="col-4">職稱</dt><dd class="col-8">${escapeHtml(d.title ?? "")}</dd>
-            <dt class="col-4">到職日</dt><dd class="col-8">${hireDate}</dd>
-            <dt class="col-4">啟用</dt><dd class="col-8">${d.isActive ? "✅" : "❌"}</dd>
-        `;
-        detailsModal.show();
-    };
-    window.editEmp = async function(id){
-        console.log('editEmp', id)
-    };
-    window.delEmp  = async function(id){
-      if(!confirm(`確定刪除 #${id}？`)) return;
-      const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? "";
-      const res = await fetch('@Url.Action("Delete", "Employee", new { area = "Admin" })', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json','RequestVerificationToken': token },
-        body: JSON.stringify({ id })
-      });
-      if (res.ok) {
-          document.querySelector('#empSearch')?.dispatchEvent(new Event('submit')); 
-      }
-      else alert('刪除失敗');
-    };
-</script>
-@section Scripts {
-    <script>
-        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-    </script>
-}

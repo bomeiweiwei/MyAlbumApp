@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyAlbum.Application.EmployeeAccount;
 using MyAlbum.Models;
 using MyAlbum.Models.Employee;
+using MyAlbum.Models.ViewModel.Employee;
 using MyAlbum.Shared.Enums;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -17,12 +19,32 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
     public class EmployeeController : Controller
     {
         private readonly IEmployeeAccountReadService _employeeAccountReadService;
-        public EmployeeController(IEmployeeAccountReadService employeeAccountReadService)
+        private readonly IAntiforgery _antiforgery;
+        public EmployeeController(IEmployeeAccountReadService employeeAccountReadService, IAntiforgery antiforgery)
         {
             _employeeAccountReadService = employeeAccountReadService;
+            _antiforgery = antiforgery;
         }
 
         public IActionResult Index() => View();
+
+        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize(Policy = "perm:Employee.Read")]
+        public async Task<IActionResult> IndexPartial([FromBody] PageRequestBase<EmployeeListReq> req)
+        {
+            var resp = await _employeeAccountReadService.GetEmployeeListAsync(req);
+            if (resp == null || resp.StatusCode != (long)ReturnCode.Succeeded) return NotFound();
+
+            var vm = new EmployeeListViewModel
+            {
+                Items = resp.Data,
+                Total = resp.Count,
+                PageIndex = req.PageIndex,
+                PageSize = req.PageSize,
+                FullName = req.Data?.FullName
+            };
+            return PartialView("_EmployeeTable", vm);
+        }
 
         [HttpPost, ValidateAntiForgeryToken]
         [Authorize(Policy = "perm:Employee.Read")]

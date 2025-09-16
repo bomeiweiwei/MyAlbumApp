@@ -1,0 +1,70 @@
+﻿@model MyAlbum.Models.ViewModel.Employee.EmployeeListViewModel
+@using System
+
+@{
+    var pages = (int)Math.Ceiling((double)Model.Total / Model.PageSize);
+    int start = Math.Max(1, Model.PageIndex - 3);
+    int end = Math.Min(pages, Model.PageIndex + 3);
+}
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th style="width:100px">ID</th>
+            <th>姓名</th>
+            <th style="width:180px">職稱</th>
+            <th style="width:140px">到職日</th>
+            <th style="width:100px">狀態</th>
+            <th style="width:120px">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Items.Any())
+        {
+            foreach (var r in Model.Items)
+            {
+                <tr>
+                    <td>@r.EmployeeId</td>
+                    <td>@r.FullName</td>
+                    <td>@r.Title</td>
+                    <td>@(r.HireDate?.ToString("yyyy-MM-dd"))</td>
+                    <td>
+                        @if (r.IsActive)
+                        {
+                            <span class="badge bg-success">啟用</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">停用</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openDetails(@r.EmployeeId)">檢視</button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="6" class="text-center text-muted">— 無資料 —</td></tr>
+        }
+    </tbody>
+</table>
+
+<nav class="d-flex justify-content-between align-items-center">
+    <div class="text-muted">第 @Model.PageIndex / @pages 頁，共 @Model.Total 筆</div>
+    <ul class="pagination mb-0">
+        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+            <a class="page-link" href="javascript:void(0)" onclick="submitSearch(@(Model.PageIndex - 1))">&laquo;</a>
+        </li>
+        @for (int p = start; p <= end; p++)
+        {
+            <li class="page-item @(p == Model.PageIndex ? "active" : "")">
+                <a class="page-link" href="javascript:void(0)" onclick="submitSearch(@p)">@p</a>
+            </li>
+        }
+        <li class="page-item @(Model.PageIndex == pages ? "disabled" : "")">
+            <a class="page-link" href="javascript:void(0)" onclick="submitSearch(@(Model.PageIndex + 1))">&raquo;</a>
+        </li>
+    </ul>
+</nav>
