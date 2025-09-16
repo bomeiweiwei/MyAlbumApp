@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyAlbum.Application.EmployeeAccount;
+using MyAlbum.Application.EmployeeAccount.implement;
 using MyAlbum.Models;
 using MyAlbum.Models.Employee;
 using MyAlbum.Models.ViewModel;
@@ -20,11 +22,11 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
     public class EmployeeController : Controller
     {
         private readonly IEmployeeAccountReadService _employeeAccountReadService;
-        private readonly IAntiforgery _antiforgery;
-        public EmployeeController(IEmployeeAccountReadService employeeAccountReadService, IAntiforgery antiforgery)
+        private readonly IEmployeeAccountCreateService _employeeAccountCreateService;
+        public EmployeeController(IEmployeeAccountReadService employeeAccountReadService, IEmployeeAccountCreateService employeeAccountCreateService)
         {
             _employeeAccountReadService = employeeAccountReadService;
-            _antiforgery = antiforgery;
+            _employeeAccountCreateService = employeeAccountCreateService;
         }
 
         public IActionResult Index() => View();
@@ -82,6 +84,26 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
             GetEmployeeReq req = new GetEmployeeReq() { EmployeeId = id };
             var resp = await _employeeAccountReadService.GetEmployeeDataByIdAsync(req);
             if (resp == null || resp.StatusCode != (long)ReturnCode.Succeeded) return NotFound();
+            return Ok(resp.Data);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "perm:Employee.Write")]
+        public IActionResult CreatePartial()
+        {
+            return PartialView("_EmployeeCreate");
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "perm:Employee.Write")]
+        public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeReq req)
+        {
+            var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(accountIdStr, out var operatorId))
+            {
+                req.OperatorId = operatorId;
+            }
+            var resp = await _employeeAccountCreateService.CreateEmployee(req);
             return Ok(resp.Data);
         }
 

@@ -41,7 +41,9 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
                             IsActive = account.IsActive,
                             UserType = LoginUserType.Employee.GetDescription(),
                             FullName = emp.FullName,
-                            PasswordHash = account.PasswordHash
+                            PasswordHash = account.PasswordHash,
+                            Title = emp.Title ?? "",
+                            HireDate = emp.HireDate
                         };
             if (req.EmployeeId > 0)
                 query = query.Where(m => m.EmployeeId == req.EmployeeId);

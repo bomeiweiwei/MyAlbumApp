@@ -1,0 +1,47 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+
+<div class="container-fluid">
+    @Html.AntiForgeryToken()
+
+    <div id="createEmpError" class="alert alert-danger d-none"></div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label class="form-label">登入帳號 (LoginName) <span class="text-danger">*</span></label>
+            <input class="form-control" name="LoginName" required />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">姓名 (FullName) <span class="text-danger">*</span></label>
+            <input class="form-control" name="FullName" required />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label">職稱 (Title)</label>
+            <input class="form-control" name="Title" />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Email</label>
+            <input class="form-control" name="Email" type="email" />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label">密碼 (Password) <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <input class="form-control" name="Password" type="password" required />
+                <button class="btn btn-outline-secondary" type="button" onclick="toggleCreatePwd()">顯示</button>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label">到職日 (HireDate) <span class="text-danger">*</span></label>
+            <input class="form-control" name="HireDate" type="date" required />
+        </div>
+    </div>
+
+    <hr class="my-3" />
+
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button id="btnCreateSubmit" class="btn btn-primary" type="button" onclick="submitCreateEmployee()">建立</button>
+    </div>
+</div>

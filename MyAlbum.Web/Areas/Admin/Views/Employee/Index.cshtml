@@ -1,12 +1,19 @@
 ﻿@{
     ViewData["Title"] = "員工列表";
 }
+
+@{
+    var canWrite = User.HasClaim("perm", "Employee.Write");
+}
+
 @section Scripts{
     <script>
         // 讀 Anti-Forgery token（由 Html.AntiForgeryToken() 產生）
-        function getAfToken(){
-            const el = document.querySelector('input[name="__RequestVerificationToken"]');
-            return el ? el.value : '';
+        function getAfToken() {
+            const fromCreate = document.querySelector('#createEmpBody input[name="__RequestVerificationToken"]');
+            if (fromCreate) return fromCreate.value;
+            const fromSearch = document.querySelector('#searchForm input[name="__RequestVerificationToken"]');
+            return fromSearch ? fromSearch.value : '';
         }
 
         // 主查詢函式：你可手動呼叫，或由按鈕/事件觸發
@@ -81,13 +88,104 @@
           new bootstrap.Modal('#detailsModal').show();
         }
 
+
+        async function openCreateEmployee() {
+            const url = '@Url.Action("CreatePartial","Employee", new { area="Admin" })';
+            const res = await fetch(url, { method: 'GET' });
+            const host = document.getElementById('createEmpBody');
+
+            if (!res.ok) {
+                host.innerHTML = `<div class="text-danger">載入失敗（${res.status}）</div>`;
+            } else {
+                host.innerHTML = await res.text();
+
+                // 設定預設到職日=今天
+                const inp = host.querySelector('[name="HireDate"]');
+                if (inp && !inp.value) {
+                    const dt = new Date();
+                    const yyyy = dt.getFullYear();
+                    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+                    const dd = String(dt.getDate()).padStart(2, '0');
+                    inp.value = `${yyyy}-${mm}-${dd}`;
+                }
+            }
+            new bootstrap.Modal('#createEmpModal').show();
+        }
+
+        function toggleCreatePwd() {
+            const inp = document.querySelector('#createEmpBody [name="Password"]');
+            if (inp) inp.type = (inp.type === 'password') ? 'text' : 'password';
+        }
+
+        async function submitCreateEmployee() {
+            const host = document.getElementById('createEmpBody');
+            const err = host.querySelector('#createEmpError');
+            const btn = host.querySelector('#btnCreateSubmit');
+            const v = (name) => (host.querySelector(`[name="${name}"]`)?.value || '').trim();
+
+            const payload = {
+                LoginName: v('LoginName'),
+                FullName: v('FullName'),
+                Title: v('Title'),
+                Email: v('Email'),
+                Password: v('Password'),
+                HireDate: v('HireDate') // yyyy-MM-dd，後端是 DateOnly
+            };
+
+            if (!payload.LoginName || !payload.FullName || !payload.Password || !payload.HireDate) {
+                err.textContent = '請填寫必填欄位。';
+                err.classList.remove('d-none');
+                return;
+            }
+
+            err.classList.add('d-none');
+            btn.disabled = true;
+
+            try {
+                const resp = await fetch('@Url.Action("CreateEmployee","Employee", new { area="Admin" })', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': getAfToken() // 若後端加了 [ValidateAntiForgeryToken] 才需要
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const text = await resp.text();
+                if (!resp.ok) {
+                    err.textContent = `建立失敗（${resp.status}）：` + (text || '請稍後重試');
+                    err.classList.remove('d-none');
+                    return;
+                }
+
+                // 成功：關閉、刷新列表到第1頁
+                bootstrap.Modal.getInstance(document.getElementById('createEmpModal')).hide();
+                if (typeof submitSearch === 'function') submitSearch(1);
+            }
+            catch (ex) {
+                err.textContent = '建立失敗：' + (ex?.message || ex);
+                err.classList.remove('d-none');
+            }
+            finally {
+                btn.disabled = false;
+            }
+        }
+
         // 頁面載入先打一次（預設第 1 頁）
         document.addEventListener('DOMContentLoaded', () => submitSearch(1));
     </script>
 }
 
 <div class="container py-3">
-
+    <!-- 工具列：按鈕靠右 -->
+    <div class="d-flex justify-content-end mb-2">
+        @if (canWrite)
+        {
+            <button type="button" class="btn btn-primary" onclick="openCreateEmployee()">
+                新增員工
+            </button>
+        }
+    </div>
     <!-- 搜尋列（不用 HTMX，交給你自己的 JS） -->
     <form id="searchForm" class="row g-2 align-items-center mb-3" onsubmit="event.preventDefault(); submitSearch(1);">
         @Html.AntiForgeryToken()
@@ -130,6 +228,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detailsBody">載入中...</div>
+        </div>
+    </div>
+</div>
+<!-- 新增 Modal -->
+<div class="modal fade" id="createEmpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新增員工</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="createEmpBody">載入中...</div>
         </div>
     </div>
 </div>
