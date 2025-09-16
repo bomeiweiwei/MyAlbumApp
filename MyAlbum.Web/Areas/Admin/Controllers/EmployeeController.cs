@@ -24,10 +24,12 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
     {
         private readonly IEmployeeAccountReadService _employeeAccountReadService;
         private readonly IEmployeeAccountCreateService _employeeAccountCreateService;
-        public EmployeeController(IEmployeeAccountReadService employeeAccountReadService, IEmployeeAccountCreateService employeeAccountCreateService)
+        private readonly IEmployeeAccountUpdateService _employeeAccountUpdateService;
+        public EmployeeController(IEmployeeAccountReadService employeeAccountReadService, IEmployeeAccountCreateService employeeAccountCreateService, IEmployeeAccountUpdateService employeeAccountUpdateService)
         {
             _employeeAccountReadService = employeeAccountReadService;
             _employeeAccountCreateService = employeeAccountCreateService;
+            _employeeAccountUpdateService = employeeAccountUpdateService;
         }
 
         public IActionResult Index() => View();
@@ -91,7 +93,7 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
             return PartialView("_EmployeeCreate");
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         [Authorize(Policy = "perm:Employee.Write")]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeReq req)
         {
@@ -104,15 +106,29 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
             return Ok(resp.Data);
         }
 
-        /*
-            [HttpPost, ValidateAntiForgeryToken]
-            [Authorize(Policy = "perm:Employee.Write")]
-            public async Task<IActionResult> Update([FromBody] EmployeeUpdateReq req) { ... }
+        [HttpGet]
+        [Authorize(Policy = "perm:Employee.Write")]
+        public async Task<IActionResult> UpdatePartial(int id)
+        {
+            var req = new GetEmployeeReq { EmployeeId = id };
+            var resp = await _employeeAccountReadService.GetEmployeeDataByIdAsync(req);
+            if (resp == null || resp.StatusCode != (long)ReturnCode.Succeeded) return NotFound();
 
-            [HttpPost, ValidateAntiForgeryToken]
-            [Authorize(Policy = "perm:Employee.Delete")]
-            public async Task<IActionResult> Delete([FromBody] IdReq req) { ... }
-         */
+            return PartialView("_EmployeeUpdate", resp.Data);
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize(Policy = "perm:Employee.Write")]
+        public async Task<IActionResult> UpdateEmployee([FromBody] UpdateEmployeeReq req)
+        {
+            var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(accountIdStr, out var operatorId))
+            {
+                req.OperatorId = operatorId;
+            }
+            var resp = await _employeeAccountUpdateService.UpdateEmployee(req);
+            return Ok(resp.Data);
+        }
     }
 }
 

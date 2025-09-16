@@ -54,6 +54,7 @@ namespace MyAlbum.Application.EmployeeAccount.implement
             dto.Title = data?.Title ?? string.Empty;
             dto.HireDate = data?.HireDate ?? null;
             dto.IsActive = data?.IsActive ?? false;
+            dto.Email = data?.Email ?? string.Empty;
             result.Data = dto;
             return result;
         }

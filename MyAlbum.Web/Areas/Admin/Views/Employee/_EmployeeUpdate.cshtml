@@ -1,0 +1,52 @@
+﻿@model MyAlbum.Models.Employee.EmployeeDto
+@{
+    Layout = null;
+}
+<div class="container-fluid">
+    @Html.AntiForgeryToken()
+
+    <div id="updateEmpError" class="alert alert-danger d-none"></div>
+
+    <!-- hidden: EmployeeId -->
+    <input type="hidden" name="EmployeeId" value="@Model.EmployeeId" />
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label class="form-label">姓名 (FullName) <span class="text-danger">*</span></label>
+            <input class="form-control" name="FullName" value="@Model.FullName" required />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">職稱 (Title)</label>
+            <input class="form-control" name="Title" value="@Model.Title" />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label">Email</label>
+            <input class="form-control" name="Email" type="email" value="@Model.Email" />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label">新密碼 (留空＝不變)</label>
+            <div class="input-group">
+                <input class="form-control" name="NewPassword" type="password" />
+                <button class="btn btn-outline-secondary" type="button" onclick="toggleUpdatePwd()">顯示</button>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label">到職日 (HireDate)</label>
+            <input class="form-control" name="HireDate" type="date"
+                   value="@(Model.HireDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+    </div>
+
+    <hr class="my-3" />
+
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button id="btnUpdateSubmit" class="btn btn-primary" type="button" onclick="submitUpdateEmployee()">儲存</button>
+    </div>
+</div>
+
+
+

@@ -17,5 +17,6 @@ namespace MyAlbum.Models.Account
         public int EmployeeId { get; set; }
         public string Title { get; set; }
         public DateOnly? HireDate { get; set; }
+        public string Email { get; set; }
     }
 }

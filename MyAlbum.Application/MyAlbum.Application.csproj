@@ -24,8 +24,6 @@
   <ItemGroup>
     <Folder Include="Test\" />
     <Folder Include="Test\implement\" />
-    <Folder Include="EmployeeAccount\" />
-    <Folder Include="EmployeeAccount\implement\" />
     <Folder Include="Identity\" />
     <Folder Include="Identity\implement\" />
   </ItemGroup>

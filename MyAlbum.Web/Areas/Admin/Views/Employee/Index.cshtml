@@ -12,11 +12,13 @@
         function getAfToken() {
             const fromCreate = document.querySelector('#createEmpBody input[name="__RequestVerificationToken"]');
             if (fromCreate) return fromCreate.value;
+            const fromUpdate = document.querySelector('#updateEmpBody input[name="__RequestVerificationToken"]');
+            if (fromUpdate) return fromUpdate.value;
             const fromSearch = document.querySelector('#searchForm input[name="__RequestVerificationToken"]');
             return fromSearch ? fromSearch.value : '';
         }
-
-        // 主查詢函式：你可手動呼叫，或由按鈕/事件觸發
+        // 表格查詢 =======================
+        // 主查詢函式
         async function submitSearch(pageIndex){
             const form = document.getElementById('searchForm');
             const pageSize = document.getElementById('pageSizeInput').value || 10;
@@ -73,7 +75,8 @@
             form.querySelector('[name="PageIndex"]').value = 1;
             submitSearch(1);
         }
-
+        // 表格查詢 =======================
+        // 檢視彈窗 =======================
         async function openDetails(id){
           const url = '@Url.Action("DetailsPartial","Employee", new { area="Admin" })' + `?id=${id}`;
           const res = await fetch(url, { method: 'GET' });
@@ -87,8 +90,8 @@
           }
           new bootstrap.Modal('#detailsModal').show();
         }
-
-
+        // 檢視彈窗 =======================
+        // 新增彈窗 =======================
         async function openCreateEmployee() {
             const url = '@Url.Action("CreatePartial","Employee", new { area="Admin" })';
             const res = await fetch(url, { method: 'GET' });
@@ -111,12 +114,12 @@
             }
             new bootstrap.Modal('#createEmpModal').show();
         }
-
+        // 新增彈窗 =======================
+        // 新增彈窗設定與送出 =======================
         function toggleCreatePwd() {
             const inp = document.querySelector('#createEmpBody [name="Password"]');
             if (inp) inp.type = (inp.type === 'password') ? 'text' : 'password';
         }
-
         async function submitCreateEmployee() {
             const host = document.getElementById('createEmpBody');
             const err = host.querySelector('#createEmpError');
@@ -170,7 +173,80 @@
                 btn.disabled = false;
             }
         }
+        // 新增彈窗設定與送出 =======================
+        // 編輯彈窗 =======================
+        async function openUpdateEmployee(id){
+            const url = '@Url.Action("UpdatePartial", "Employee", new { area = "Admin" })' + `?id=${id}`;
+            const host = document.getElementById('updateEmpBody');
+            host.innerHTML = '載入中...';
+            const res = await fetch(url);
+            host.innerHTML = res.ok ? await res.text() : `<div class="text-danger">載入失敗（${res.status}）</div>`;
+            new bootstrap.Modal('#updateEmpModal').show();
+        }
+        // 編輯彈窗 =======================
+        // 編輯彈窗設定與送出 =======================
+        function toggleUpdatePwd(){
+          const inp = document.querySelector('#updateEmpBody [name="NewPassword"]');
+          if (inp) inp.type = (inp.type === 'password') ? 'text' : 'password';
+        }
 
+        // 送出更新
+        async function submitUpdateEmployee(){
+          const host = document.getElementById('updateEmpBody');
+          const err  = host.querySelector('#updateEmpError');
+          const btn  = host.querySelector('#btnUpdateSubmit');
+
+          const v = (name) => (host.querySelector(`[name="${name}"]`)?.value || '').trim();
+
+          const payload = {
+            EmployeeId: Number(v('EmployeeId')),
+            FullName:   v('FullName'),
+            Title:      v('Title'),
+            Email:      v('Email'),
+            NewPassword:v('NewPassword'),
+            HireDate:   v('HireDate') || null
+          };
+
+          if (!payload.EmployeeId || !payload.FullName){
+            err.textContent = '請至少填寫必填欄位（姓名）。';
+            err.classList.remove('d-none');
+            return;
+          }
+
+          err.classList.add('d-none');
+          btn.disabled = true;
+
+          try{
+            const resp = await fetch('@Url.Action("UpdateEmployee", "Employee", new { area = "Admin" })', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': getAfToken()
+              },
+              body: JSON.stringify(payload)
+            });
+
+            const text = await resp.text();
+            if (!resp.ok){
+              err.textContent = `更新失敗（${resp.status}）：` + (text || '請稍後重試');
+              err.classList.remove('d-none');
+              return;
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('updateEmpModal')).hide();
+            if (typeof submitSearch === 'function') {
+              submitSearch(1);
+            }
+          }
+          catch(ex){
+            err.textContent = '更新失敗：' + (ex?.message || ex);
+            err.classList.remove('d-none');
+          }
+          finally{
+            btn.disabled = false;
+          }
+        }
+        // 編輯彈窗設定與送出 =======================
         // 頁面載入先打一次（預設第 1 頁）
         document.addEventListener('DOMContentLoaded', () => submitSearch(1));
     </script>
@@ -240,6 +316,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="createEmpBody">載入中...</div>
+        </div>
+    </div>
+</div>
+<!-- 編輯 Modal -->
+<div class="modal fade" id="updateEmpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">更新員工</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="updateEmpBody">載入中...</div>
         </div>
     </div>
 </div>
