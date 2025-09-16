@@ -15,6 +15,11 @@ namespace MyAlbum.Shared.Enums
         /// </summary>
         [Description("資料不存在")]
         DataNotFound = 404,
+        /// <summary>
+        /// 異常錯誤
+        /// </summary>
+        [Description("異常錯誤")]
+        ExceptionError = 500
     }
 }
 

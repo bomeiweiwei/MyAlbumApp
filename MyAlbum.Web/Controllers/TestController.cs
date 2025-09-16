@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MyAlbum.Application.EmployeeAccount;
+using MyAlbum.Application.EmployeeAccount.implement;
 using MyAlbum.Application.Identity;
 using MyAlbum.Application.Identity.implement;
 using MyAlbum.Application.Test;
@@ -21,12 +23,12 @@ namespace MyAlbum.Web.Controllers
     {
         private readonly IWebHostEnvironment _env;
         private readonly ITestService _testService;
-        private readonly IEmployeeAccountReadService _employeeAccountReadService;
-        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountReadService employeeAccountReadService)
+        private readonly IEmployeeAccountCreateService _employeeAccountCreateService;
+        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountCreateService employeeAccountCreateService)
         {
             _env = env;
             _testService = testService;
-            _employeeAccountReadService = employeeAccountReadService;
+            _employeeAccountCreateService = employeeAccountCreateService;
         }
         /// <summary>
         /// 取得環境變數
@@ -50,14 +52,18 @@ namespace MyAlbum.Web.Controllers
             var connectResult = await _testService.GetConnectResult();
             return Ok(new { connectResult });
         }
-
+        
         [HttpPost]
-        [Route("GetEmployeeList")]
-        public async Task<IActionResult> GetEmployeeList(PageRequestBase<EmployeeListReq> req)
+        [Route("CreateEmployee")]
+        public async Task<IActionResult> CreateEmployee(CreateEmployeeReq req)
         {
-            var dto = await _employeeAccountReadService.GetEmployeeListAsync(req);
-            if (dto is null) return NotFound();
-            return Ok(dto);
+            var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(accountIdStr, out var operatorId))
+            {
+                req.OperatorId = operatorId;
+            }
+            var resp = await _employeeAccountCreateService.CreateEmployee(req);
+            return Ok(resp.Data);
         }
     }
 }

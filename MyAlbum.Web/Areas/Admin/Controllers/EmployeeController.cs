@@ -86,10 +86,6 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
         }
 
         /*
-            [HttpGet]
-            [Authorize(Policy = "perm:Employee.Read")]
-            public async Task<IActionResult> Get(int id) { ... }
-
             [HttpPost, ValidateAntiForgeryToken]
             [Authorize(Policy = "perm:Employee.Write")]
             public async Task<IActionResult> Update([FromBody] EmployeeUpdateReq req) { ... }
