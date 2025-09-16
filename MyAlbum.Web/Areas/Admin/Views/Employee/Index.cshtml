@@ -67,25 +67,18 @@
             submitSearch(1);
         }
 
-        // 檢視明細（保留你原本的 JSON 取法）
         async function openDetails(id){
-            const res = await fetch('@Url.Action("GetEmployee","Employee", new { area="Admin" })' + `?id=${id}`);
-            const body = document.getElementById('detailsBody');
-            if (!res.ok){
-                body.innerHTML = '讀取失敗';
-                return new bootstrap.Modal('#detailsModal').show();
-            }
-            const d = await res.json();
-            const toDate = s => s ? s.toString().substring(0,10) : '';
-            body.innerHTML = `
-                <dl class="row">
-                <dt class="col-sm-3">ID</dt><dd class="col-sm-9">${d.employeeId}</dd>
-                <dt class="col-sm-3">姓名</dt><dd class="col-sm-9">${d.fullName ?? ''}</dd>
-                <dt class="col-sm-3">職稱</dt><dd class="col-sm-9">${d.title ?? ''}</dd>
-                <dt class="col-sm-3">到職日</dt><dd class="col-sm-9">${toDate(d.hireDate)}</dd>
-                <dt class="col-sm-3">啟用</dt><dd class="col-sm-9">${d.isActive ? '✅ 啟用' : '⛔ 停用'}</dd>
-                </dl>`;
-            new bootstrap.Modal('#detailsModal').show();
+          const url = '@Url.Action("DetailsPartial","Employee", new { area="Admin" })' + `?id=${id}`;
+          const res = await fetch(url, { method: 'GET' });
+          const body = document.getElementById('detailsBody');
+
+          if(!res.ok){
+            body.innerHTML = `<div class="text-danger">讀取失敗（${res.status}）</div>`;
+          }else{
+            const html = await res.text();
+            body.innerHTML = html; // 直接塞進 Modal
+          }
+          new bootstrap.Modal('#detailsModal').show();
         }
 
         // 頁面載入先打一次（預設第 1 頁）

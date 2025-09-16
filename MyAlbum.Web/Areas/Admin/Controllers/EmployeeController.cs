@@ -65,6 +65,18 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
 
         [HttpGet]
         [Authorize(Policy = "perm:Employee.Read")]
+        public async Task<IActionResult> DetailsPartial(int id)
+        {
+            var req = new GetEmployeeReq { EmployeeId = id };
+            var resp = await _employeeAccountReadService.GetEmployeeDataByIdAsync(req);
+            if (resp == null || resp.StatusCode != (long)ReturnCode.Succeeded) return NotFound();
+
+            // 直接把 EmployeeDto 丟給 Partial
+            return PartialView("_EmployeeDetails", resp.Data);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "perm:Employee.Read")]
         public async Task<IActionResult> GetEmployee(int id)
         {
             GetEmployeeReq req = new GetEmployeeReq() { EmployeeId = id };
