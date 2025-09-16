@@ -41,7 +41,11 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
                 Total = resp.Count,
                 PageIndex = req.PageIndex,
                 PageSize = req.PageSize,
-                FullName = req.Data?.FullName
+                FullName = req.Data?.FullName,
+                // 權限讀取
+                CanRead = User.HasClaim("perm", "Employee.Read"),
+                CanUpdate = User.HasClaim("perm", "Employee.Write"),
+                CanDelete = User.HasClaim("perm", "Employee.Delete"),
             };
             return PartialView("_EmployeeTable", vm);
         }

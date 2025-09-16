@@ -10,6 +10,10 @@ namespace MyAlbum.Models.ViewModel.Employee
         public int PageSize { get; set; }
         public long Total { get; set; }
         public string? FullName { get; set; }
+
+        public bool CanRead { get; set; }
+        public bool CanUpdate { get; set; }
+        public bool CanDelete { get; set; }
     }
 }
 

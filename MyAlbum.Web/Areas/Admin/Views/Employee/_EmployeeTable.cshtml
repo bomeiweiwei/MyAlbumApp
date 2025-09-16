@@ -39,7 +39,10 @@
                         }
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="openDetails(@r.EmployeeId)">檢視</button>
+                        @if (Model.CanRead)
+                        {
+                            <button class="btn btn-sm btn-outline-primary" onclick="openDetails(@r.EmployeeId)">檢視</button>
+                        }
                     </td>
                 </tr>
             }
