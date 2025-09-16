@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyAlbum.Application.EmployeeAccount;
 using MyAlbum.Models;
 using MyAlbum.Models.Employee;
+using MyAlbum.Models.ViewModel;
 using MyAlbum.Models.ViewModel.Employee;
 using MyAlbum.Shared.Enums;
 
@@ -38,14 +39,17 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
             var vm = new EmployeeListViewModel
             {
                 Items = resp.Data,
-                Total = resp.Count,
-                PageIndex = req.PageIndex,
-                PageSize = req.PageSize,
-                FullName = req.Data?.FullName,
-                // 權限讀取
+
                 CanRead = User.HasClaim("perm", "Employee.Read"),
                 CanUpdate = User.HasClaim("perm", "Employee.Write"),
                 CanDelete = User.HasClaim("perm", "Employee.Delete"),
+
+                Pagination = new PaginationViewModel
+                {
+                    PageIndex = req.PageIndex,
+                    PageSize = req.PageSize,
+                    Total = resp.Count
+                }
             };
             return PartialView("_EmployeeTable", vm);
         }

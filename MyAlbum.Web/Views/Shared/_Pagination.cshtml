@@ -1,0 +1,29 @@
+﻿@model MyAlbum.Models.ViewModel.PaginationViewModel
+@{
+    var pages = (int)Math.Ceiling((double)Model.Total / Model.PageSize);
+    int start = Math.Max(1, Model.PageIndex - 3);
+    int end = Math.Min(pages, Model.PageIndex + 3);
+}
+
+<nav class="d-flex justify-content-between align-items-center">
+    <div class="text-muted">
+        第 @Model.PageIndex / @pages 頁，共 @Model.Total 筆
+    </div>
+    <ul class="pagination mb-0">
+        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+            <a class="page-link" href="javascript:void(0)"
+               onclick="submitSearch(@(Model.PageIndex - 1))">&laquo;</a>
+        </li>
+        @for (int p = start; p <= end; p++)
+        {
+            <li class="page-item @(p == Model.PageIndex ? "active" : "")">
+                <a class="page-link" href="javascript:void(0)"
+                   onclick="submitSearch(@p)">@p</a>
+            </li>
+        }
+        <li class="page-item @(Model.PageIndex == pages ? "disabled" : "")">
+            <a class="page-link" href="javascript:void(0)"
+               onclick="submitSearch(@(Model.PageIndex + 1))">&raquo;</a>
+        </li>
+    </ul>
+</nav>
