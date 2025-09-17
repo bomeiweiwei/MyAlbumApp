@@ -13,8 +13,10 @@
   <ItemGroup>
     <None Remove="EmployeeAccount\" />
     <None Remove="RolePerm\" />
+    <None Remove="Perm\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="RolePerm\" />
+    <Folder Include="Perm\" />
   </ItemGroup>
 </Project>

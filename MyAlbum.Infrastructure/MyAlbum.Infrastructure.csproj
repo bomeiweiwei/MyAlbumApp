@@ -20,6 +20,7 @@
     <None Remove="Repositories\" />
     <None Remove="Repositories\EmployeeAccount\" />
     <None Remove="Repositories\RolePerm\" />
+    <None Remove="Repositories\Perm\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EF\" />
@@ -28,6 +29,7 @@
     <Folder Include="Note\" />
     <Folder Include="EF\Extensions\" />
     <Folder Include="Repositories\RolePerm\" />
+    <Folder Include="Repositories\Perm\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">

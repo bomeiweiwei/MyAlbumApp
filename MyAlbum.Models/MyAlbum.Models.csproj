@@ -15,6 +15,7 @@
     <None Remove="Shared\" />
     <None Remove="RolePerm\" />
     <None Remove="ViewModel\Employee\" />
+    <None Remove="Perm\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Identity\" />
@@ -23,6 +24,7 @@
     <Folder Include="Shared\" />
     <Folder Include="RolePerm\" />
     <Folder Include="ViewModel\Employee\" />
+    <Folder Include="Perm\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MyAlbum.Shared\MyAlbum.Shared.csproj" />
