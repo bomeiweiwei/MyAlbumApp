@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4"><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+<PrivateAssets>all</PrivateAssets>
+</PackageReference>
+    <PackageReference Include="FluentAssertions" Version="8.6.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyAlbum.Application\MyAlbum.Application.csproj" />
+    <ProjectReference Include="..\MyAlbum.Domain\MyAlbum.Domain.csproj" />
+    <ProjectReference Include="..\MyAlbum.Infrastructure\MyAlbum.Infrastructure.csproj" />
+    <ProjectReference Include="..\MyAlbum.Models\MyAlbum.Models.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="EmployeeAccount\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EmployeeAccount\" />
+  </ItemGroup>
+</Project>
