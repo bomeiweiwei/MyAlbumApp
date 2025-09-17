@@ -103,6 +103,14 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
                 req.OperatorId = operatorId;
             }
             var resp = await _employeeAccountCreateService.CreateEmployee(req);
+            if (resp == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "新增失敗，服務未回應。" });
+            }
+            if (resp.StatusCode != (long)ReturnCode.Succeeded)
+            {
+                return BadRequest(new { message = resp.Message ?? "操作不允許" });
+            }
             return Ok(resp.Data);
         }
 
@@ -127,6 +135,14 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
                 req.OperatorId = operatorId;
             }
             var resp = await _employeeAccountUpdateService.UpdateEmployee(req);
+            if (resp == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "更新失敗，服務未回應。" });
+            }
+            if (resp.StatusCode != (long)ReturnCode.Succeeded)
+            {
+                return BadRequest(new { message = resp.Message ?? "操作不允許" });
+            }
             return Ok(resp.Data);
         }
 
@@ -140,6 +156,15 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
                 req.OperatorId = operatorId;
             }
             var resp = await _employeeAccountUpdateService.UpdateEmployeeActive(req);
+            if (resp == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "更新失敗，服務未回應。" });
+            }
+            if (resp.StatusCode != (long)ReturnCode.Succeeded)
+            {
+                return BadRequest(new { message = resp.Message ?? "操作不允許" });
+            }
+
             return Ok(resp.Data);
         }
     }
