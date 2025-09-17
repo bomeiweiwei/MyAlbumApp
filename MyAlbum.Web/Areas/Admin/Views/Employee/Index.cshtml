@@ -8,7 +8,6 @@
 
 @section Scripts{
     <script>
-        // 讀 Anti-Forgery token（由 Html.AntiForgeryToken() 產生）
         function getAfToken() {
             const fromCreate = document.querySelector('#createEmpBody input[name="__RequestVerificationToken"]');
             if (fromCreate) return fromCreate.value;
@@ -247,6 +246,43 @@
           }
         }
         // 編輯彈窗設定與送出 =======================
+
+        // 切換啟用狀態（停用/啟用）
+        async function toggleActive(employeeId, currentlyActive){
+            const targetActive = !currentlyActive;
+            const verb = targetActive ? '啟用' : '停用';
+            const ok = confirm(`確定要${verb}此帳號嗎？`);
+            if (!ok) return;
+
+            const payload = {
+                EmployeeId: Number(employeeId),
+                IsActive: targetActive
+            };
+
+            try{
+                const resp = await fetch('@Url.Action("UpdateEmployeeActive","Employee", new { area="Admin" })', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAfToken()
+                },
+                body: JSON.stringify(payload)
+                });
+
+                const text = await resp.text();
+                if(!resp.ok){
+                    alert(`${verb}失敗（${resp.status}）：${text || '請稍後重試'}`);
+                    return;
+                }
+
+                const curPage = Number(document.querySelector('#searchForm [name="PageIndex"]')?.value || 1);
+                if (typeof submitSearch === 'function') submitSearch(curPage);
+            }
+            catch(ex){
+                alert(`${verb}失敗：${ex?.message || ex}`);
+            }
+        }
+
         // 頁面載入先打一次（預設第 1 頁）
         document.addEventListener('DOMContentLoaded', () => submitSearch(1));
     </script>

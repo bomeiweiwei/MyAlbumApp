@@ -11,5 +11,7 @@ namespace MyAlbum.Domain.EmployeeAccount
     public interface IEmployeeAccountUpdateRepository
     {
         Task<ResponseBase<bool>> UpdateEmployeeAsync(UpdateEmployeeReq req, CancellationToken ct = default);
+
+        Task<ResponseBase<bool>> UpdateEmployeeActiveAsync(UpdateEmployeeActiveReq req, CancellationToken ct = default);
     }
 }

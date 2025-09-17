@@ -129,6 +129,19 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
             var resp = await _employeeAccountUpdateService.UpdateEmployee(req);
             return Ok(resp.Data);
         }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize(Policy = "perm:Employee.Delete")]
+        public async Task<IActionResult> UpdateEmployeeActive([FromBody] UpdateEmployeeActiveReq req)
+        {
+            var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(accountIdStr, out var operatorId))
+            {
+                req.OperatorId = operatorId;
+            }
+            var resp = await _employeeAccountUpdateService.UpdateEmployeeActive(req);
+            return Ok(resp.Data);
+        }
     }
 }
 

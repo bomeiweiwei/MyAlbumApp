@@ -19,6 +19,7 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
     {
         private readonly IAlbumDbContextFactory _factory;
         public EmployeeAccountUpdateRepository(IAlbumDbContextFactory factory) => _factory = factory;
+
         public async Task<ResponseBase<bool>> UpdateEmployeeAsync(UpdateEmployeeReq req, CancellationToken ct = default)
         {
             var result = new ResponseBase<bool>();
@@ -90,6 +91,83 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
 
                         employee.UpdatedDate = now;
                         employee.UpdatedBy = req.OperatorId;
+
+                        // 一次 SaveChanges
+                        await db.SaveChangesAsync(ct);
+                        await tx.CommitAsync(ct);
+
+                        result.Data = true;
+                        result.StatusCode = (long)ReturnCode.Succeeded;
+                    }
+                    catch
+                    {
+                        await tx.RollbackAsync(ct);
+                        throw;
+                    }
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                result.Data = false;
+                result.StatusCode = (long)ReturnCode.ExceptionError;
+                result.Message = ex.Message;
+            }
+            catch (DbUpdateException ex)
+            {
+                result.Data = false;
+                result.StatusCode = (long)ReturnCode.ExceptionError;
+                result.Message = "資料庫更新失敗：" + ex.GetBaseException().Message;
+            }
+            catch (Exception ex)
+            {
+                result.Data = false;
+                result.StatusCode = (long)ReturnCode.ExceptionError;
+                result.Message = "發生未預期錯誤：" + ex.Message;
+            }
+
+            return result;
+        }
+
+        public async Task<ResponseBase<bool>> UpdateEmployeeActiveAsync(UpdateEmployeeActiveReq req, CancellationToken ct = default)
+        {
+            var result = new ResponseBase<bool>();
+
+            using var ctx = _factory.Create(ConnectionMode.Master);
+            var db = ctx.AsDbContext<AlbumContext>();
+            var strategy = db.Database.CreateExecutionStrategy();
+
+            try
+            {
+                // 先抓目標員工與其 Account
+                var employee = await db.Employees
+                    .FirstOrDefaultAsync(m => m.EmployeeId == req.EmployeeId, ct);
+                if (employee == null)
+                    throw new InvalidOperationException("員工不存在。");
+
+                var account = await (from emp in db.Employees
+                                     join acc in db.Accounts on emp.AccountId equals acc.AccountId
+                                     where emp.EmployeeId == employee.EmployeeId
+                                           && acc.LoginName != "admin"
+                                           && acc.UserType == (byte)LoginUserType.Employee
+                                     select acc).FirstOrDefaultAsync(ct);
+
+                if (account == null)
+                    throw new InvalidOperationException("帳號不存在。");
+
+                var now = DateTime.UtcNow;
+
+                await strategy.ExecuteAsync(async () =>
+                {
+                    await using var tx = await db.Database.BeginTransactionAsync(ct);
+                    try
+                    {
+                        account.IsActive = req.IsActive;
+                        account.UpdatedBy = req.OperatorId;
+                        account.UpdatedDate = now;
+
+                        employee.IsActive = req.IsActive;
+                        employee.UpdatedBy = req.OperatorId;
+                        employee.UpdatedDate = now;
 
                         // 一次 SaveChanges
                         await db.SaveChangesAsync(ct);

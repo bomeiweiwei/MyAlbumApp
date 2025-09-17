@@ -40,7 +40,10 @@
                     }
                     @if (Model.CanDelete)
                     {
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(@r.EmployeeId)">刪除</button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                onclick="toggleActive(@r.EmployeeId, @(r.IsActive.ToString().ToLower()))">
+                            @(r.IsActive ? "停用" : "啟用")
+                        </button>
                     }
                 </td>
             </tr>

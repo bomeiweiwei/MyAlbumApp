@@ -32,5 +32,10 @@ namespace MyAlbum.Application.EmployeeAccount.implement
             }
             return await _repo.UpdateEmployeeAsync(req, ct);
         }
+
+        public async Task<ResponseBase<bool>> UpdateEmployeeActive(UpdateEmployeeActiveReq req, CancellationToken ct = default)
+        {
+            return await _repo.UpdateEmployeeActiveAsync(req, ct);
+        }
     }
 }
