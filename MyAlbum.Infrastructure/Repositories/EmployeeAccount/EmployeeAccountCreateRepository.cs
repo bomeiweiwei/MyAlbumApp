@@ -48,7 +48,7 @@ namespace MyAlbum.Infrastructure.Repositories.EmployeeAccount
                     await using var tx = await db.Database.BeginTransactionAsync(ct);
                     try
                     {
-                        var account = new Account
+                        var account = new EF.Models.Account
                         {
                             AccountId = accountModel.AccountId,
                             LoginName = accountModel.LoginName,

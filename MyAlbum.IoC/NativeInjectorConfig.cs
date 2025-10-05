@@ -16,13 +16,16 @@ namespace MyAlbum.IoC
         public static void RegisterService(this IServiceCollection services, IConfiguration config)
         {
             services.AddSingleton<IPasswordHasher<AccountDto>, PasswordHasher<AccountDto>>();
-            services.AddSingleton<IClock, SystemClock>();
-            services.AddSingleton<IGuidProvider, GuidProvider>();
 
             // 固定線
             services.AddScoped<IAlbumDbContextFactory, AlbumDbContextFactory>();
+            // 重試策略
+            services.AddScoped<IExecutionStrategyFactory, EfExecutionStrategyFactory>();
 
-            // 慣例掃描（一次設定好就不動）
+            services.AddSingleton<IClock, SystemClock>();
+            services.AddSingleton<IGuidProvider, GuidProvider>();
+
+            // 慣例掃描
             var servicesAsm = typeof(BaseService).Assembly;
             var efAsm = typeof(AlbumDbContextFactory).Assembly;
             services.RegisterByConvention(servicesAsm, efAsm);
