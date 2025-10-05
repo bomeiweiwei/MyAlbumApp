@@ -62,7 +62,7 @@ namespace MyAlbum.Web.Controllers
             {
                 req.OperatorId = operatorId;
             }
-            var resp = await _employeeAccountCreateService.CreateEmployee(req);
+            var resp = await _employeeAccountCreateService.CreateEmployeeWithAccount(req);
             return Ok(resp.Data);
         }
     }

@@ -6,7 +6,7 @@ namespace MyAlbum.Application.EmployeeAccount
 {
 	public interface IEmployeeAccountCreateService
 	{
-        Task<ResponseBase<int>> CreateEmployee(CreateEmployeeReq req, CancellationToken ct = default);
+        Task<ResponseBase<int>> CreateEmployeeWithAccount(CreateEmployeeReq req, CancellationToken ct = default);
     }
 }
 

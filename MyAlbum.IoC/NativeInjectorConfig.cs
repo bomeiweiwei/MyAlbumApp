@@ -6,6 +6,8 @@ using MyAlbum.Application;
 using MyAlbum.Domain;
 using MyAlbum.Infrastructure.EF;
 using MyAlbum.Models.Account;
+using MyAlbum.Shared.Abstractions;
+using MyAlbum.Shared.Implementations;
 
 namespace MyAlbum.IoC
 {
@@ -14,6 +16,8 @@ namespace MyAlbum.IoC
         public static void RegisterService(this IServiceCollection services, IConfiguration config)
         {
             services.AddSingleton<IPasswordHasher<AccountDto>, PasswordHasher<AccountDto>>();
+            services.AddSingleton<IClock, SystemClock>();
+            services.AddSingleton<IGuidProvider, GuidProvider>();
 
             // 固定線
             services.AddScoped<IAlbumDbContextFactory, AlbumDbContextFactory>();

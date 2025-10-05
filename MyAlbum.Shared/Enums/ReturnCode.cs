@@ -19,7 +19,17 @@ namespace MyAlbum.Shared.Enums
         /// 異常錯誤
         /// </summary>
         [Description("異常錯誤")]
-        ExceptionError = 500
+        ExceptionError = 500,
+        /// <summary>
+        /// 邏輯錯誤
+        /// </summary>
+        [Description("檢查錯誤")]
+        BusinessError = 9001,
+        /// <summary>
+        /// 資料異動錯誤
+        /// </summary>
+        [Description("資料異動錯誤")]
+        DbUpdateError = 9002
     }
 }
 

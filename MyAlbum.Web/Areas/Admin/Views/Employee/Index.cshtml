@@ -134,7 +134,7 @@
                 HireDate: v('HireDate') // yyyy-MM-dd，後端是 DateOnly
             };
 
-            if (!payload.LoginName || !payload.FullName || !payload.Password || !payload.HireDate) {
+            if (!payload.LoginName || !payload.FullName || !payload.Email || !payload.Password || !payload.HireDate) {
                 err.textContent = '請填寫必填欄位。';
                 err.classList.remove('d-none');
                 return;

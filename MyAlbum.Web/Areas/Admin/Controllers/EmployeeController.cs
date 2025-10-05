@@ -97,12 +97,15 @@ namespace MyAlbum.Web.Areas.Admin.Controllers
         [Authorize(Policy = "perm:Employee.Write")]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeReq req)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (Guid.TryParse(accountIdStr, out var operatorId))
             {
                 req.OperatorId = operatorId;
             }
-            var resp = await _employeeAccountCreateService.CreateEmployee(req);
+            var resp = await _employeeAccountCreateService.CreateEmployeeWithAccount(req);
             if (resp == null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "新增失敗，服務未回應。" });
