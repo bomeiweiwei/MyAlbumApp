@@ -3,8 +3,11 @@ namespace MyAlbum.Domain
 {
     public interface IAlbumDbContext : IDisposable
     {
+        // 連線測試
         Task<bool> CanConnectAsync(CancellationToken ct = default);
-        // 需要時可再加查詢/儲存方法或抽更細的 Repository 介面
+        // 交易
+        Task<int> SaveChangesAsync(CancellationToken ct = default);
+        Task<ITransaction> BeginTransactionAsync(CancellationToken ct = default);
     }
 }
 

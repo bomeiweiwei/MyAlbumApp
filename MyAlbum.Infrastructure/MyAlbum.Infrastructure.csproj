@@ -23,7 +23,6 @@
     <None Remove="Repositories\Perm\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="EF\" />
     <Folder Include="EF\Data\" />
     <Folder Include="EF\Models\" />
     <Folder Include="Note\" />

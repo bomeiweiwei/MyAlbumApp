@@ -8,10 +8,12 @@ using MyAlbum.Application.EmployeeAccount;
 using MyAlbum.Application.EmployeeAccount.implement;
 using MyAlbum.Application.Identity;
 using MyAlbum.Application.Identity.implement;
+using MyAlbum.Application.MemberAccount;
 using MyAlbum.Application.Test;
 using MyAlbum.Models;
 using MyAlbum.Models.Employee;
 using MyAlbum.Models.Identity;
+using MyAlbum.Models.Member;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -24,11 +26,13 @@ namespace MyAlbum.Web.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly ITestService _testService;
         private readonly IEmployeeAccountCreateService _employeeAccountCreateService;
-        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountCreateService employeeAccountCreateService)
+        private readonly IMemberAccountWriteService _memberAccountWriteService;
+        public TestController(IWebHostEnvironment env, ITestService testService, IEmployeeAccountCreateService employeeAccountCreateService, IMemberAccountWriteService memberAccountWriteService)
         {
             _env = env;
             _testService = testService;
             _employeeAccountCreateService = employeeAccountCreateService;
+            _memberAccountWriteService = memberAccountWriteService;
         }
         /// <summary>
         /// 取得環境變數
@@ -63,6 +67,19 @@ namespace MyAlbum.Web.Controllers
                 req.OperatorId = operatorId;
             }
             var resp = await _employeeAccountCreateService.CreateEmployeeWithAccount(req);
+            return Ok(resp.Data);
+        }
+
+        [HttpPost]
+        [Route("CreateMember")]
+        public async Task<IActionResult> CreateMember(CreateMemberReq req)
+        {
+            var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(accountIdStr, out var operatorId))
+            {
+                req.OperatorId = operatorId;
+            }
+            var resp = await _memberAccountWriteService.CreateMemberWithAccountAsync(req);
             return Ok(resp.Data);
         }
     }
