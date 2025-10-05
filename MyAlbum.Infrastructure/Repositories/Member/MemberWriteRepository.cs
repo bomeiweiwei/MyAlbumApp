@@ -26,6 +26,8 @@ namespace MyAlbum.Infrastructure.Repositories.Member
                 CreatedBy = model.CreatedBy
             };
             await db.Members.AddAsync(entity, ct);
+            // 取回Id
+            await ctx.SaveChangesAsync(ct);
             return entity.MemberId;
         }
     }

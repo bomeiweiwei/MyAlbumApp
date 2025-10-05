@@ -74,7 +74,7 @@ namespace MyAlbum.Application.MemberAccount.implement
                         Email = req.Email.Trim(),
                         NormalizedEmail = normalizedEmail,
                         PasswordHash = passwordHash,
-                        UserType = (byte)LoginUserType.Employee,
+                        UserType = (byte)LoginUserType.Member,
                         CreatedDate = now,
                         CreatedBy = req.OperatorId
                     }, ct);
